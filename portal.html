@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SmartPark — Sürücü Portalı & QR Geçiş</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet" />
+  <script src="smartpark.js"></script>
+  <style>
+    :root {
+      --bg: #f8fafc;
+      --card: #ffffff;
+      --border: #e2e8f0;
+      --text: #0f172a;
+      --muted: #64748b;
+      --dark-btn: #18181b;
+      --dark-btn-hover: #27272a;
+      --green: #059669;
+      --green-light: #ecfdf5;
+      --green-border: #a7f3d0;
+      --amber: #d97706;
+      --amber-light: #fffbeb;
+      --font-mono: 'JetBrains Mono', monospace;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif;
+      min-height: 100vh;
+    }
+
+    /* ÜST MENÜ */
+    header {
+      background: #ffffff; border-bottom: 1px solid var(--border);
+      padding: 14px 0;
+    }
+    .header-inner {
+      max-width: 1080px; margin: 0 auto; padding: 0 24px;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .brand { display: flex; align-items: center; gap: 10px; }
+    .brand-icon {
+      width: 34px; height: 34px; border-radius: 8px;
+      background: var(--dark-btn); color: #fff; display: flex; align-items: center;
+      justify-content: center; font-size: 15px; font-weight: 800;
+    }
+    .brand-title { font-size: 16px; font-weight: 800; color: var(--text); }
+    .patent-tag {
+      font-size: 11px; font-family: var(--font-mono); color: #475569;
+      background: #f1f5f9; padding: 4px 8px; border-radius: 6px; border: 1px solid #cbd5e1;
+    }
+    .nav-links { display: flex; gap: 8px; }
+    .nav-btn {
+      padding: 7px 14px; border-radius: 8px; font-size: 12px; font-weight: 600; text-decoration: none;
+      border: 1px solid var(--border); background: #ffffff; color: var(--text);
+      transition: all 0.15s;
+    }
+    .nav-btn:hover { background: #f1f5f9; }
+    .nav-btn.active { background: var(--dark-btn); color: #ffffff; border-color: var(--dark-btn); }
+
+    /* FERAH, KENARLARDA BOŞLUKLU GÖVDE */
+    .page-container {
+      max-width: 1080px; margin: 32px auto; padding: 0 24px;
+    }
+
+    /* ☀️ GÜNEŞ ENERJİSİ & TÜKETİM DASHBOARD'U */
+    .solar-dashboard {
+      background: #ffffff; border: 1px solid var(--border); border-radius: 16px;
+      padding: 20px 24px; margin-bottom: 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+    }
+    .solar-grid {
+      display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-top: 14px;
+    }
+    .solar-stat-box {
+      background: #f8fafc; border: 1px solid var(--border); border-radius: 12px;
+      padding: 14px; text-align: left;
+    }
+    .solar-val {
+      font-size: 20px; font-weight: 800; margin-top: 4px;
+    }
+
+    /* ANA IZGARA */
+    .main-grid {
+      display: grid; grid-template-columns: 420px 1fr; gap: 24px;
+    }
+    .card {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 16px; padding: 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.03); margin-bottom: 20px;
+    }
+    .card-title {
+      font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;
+      color: var(--muted); margin-bottom: 18px; display: flex; justify-content: space-between; align-items: center;
+    }
+
+    /* 📱 DİJİTAL QR KART */
+    .qr-card {
+      background: #ffffff; border: 1px solid var(--border); border-radius: 16px;
+      padding: 24px; text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+    }
+    .qr-box {
+      width: 180px; height: 180px; margin: 16px auto; background: #f8fafc;
+      padding: 12px; border-radius: 12px; border: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: center;
+    }
+    .qr-toggle {
+      display: flex; gap: 4px; background: #f1f5f9; padding: 4px;
+      border-radius: 8px; margin-bottom: 12px;
+    }
+    .qr-tab {
+      flex: 1; padding: 7px; border-radius: 6px; font-size: 11px; font-weight: 700;
+      cursor: pointer; border: none; background: transparent; color: var(--muted); transition: all 0.15s;
+    }
+    .qr-tab.active { background: var(--dark-btn); color: #ffffff; }
+
+    .btn {
+      width: 100%; padding: 12px; border: none; border-radius: 8px; font-size: 13px; font-weight: 700;
+      cursor: pointer; transition: all 0.15s; display: flex; align-items: center; justify-content: center; gap: 8px;
+    }
+    .btn-dark { background: var(--dark-btn); color: #ffffff; }
+    .btn-dark:hover { background: var(--dark-btn-hover); }
+    .btn-green { background: var(--green); color: #ffffff; margin-top: 12px; }
+    .btn-green:hover { background: #047857; }
+
+    .form-group { margin-bottom: 14px; }
+    label { display: block; font-size: 12px; font-weight: 600; color: #334155; margin-bottom: 6px; }
+    select, input {
+      width: 100%; padding: 10px 12px; background: #ffffff; border: 1px solid var(--border);
+      border-radius: 8px; color: var(--text); font-size: 13px; font-weight: 500; outline: none;
+    }
+    select:focus, input:focus { border-color: #0f172a; }
+
+    /* REZERVASYON LİSTESİ */
+    .res-list { display: flex; flex-direction: column; gap: 8px; max-height: 240px; overflow-y: auto; }
+    .res-item {
+      background: #f8fafc; border: 1px solid var(--border); border-radius: 10px;
+      padding: 12px 14px; display: flex; justify-content: space-between; align-items: center;
+    }
+
+    .toast {
+      position: fixed; bottom: 24px; right: 24px; padding: 12px 20px; border-radius: 8px;
+      font-size: 13px; font-weight: 600; z-index: 99999;
+      background: var(--dark-btn); color: #ffffff;
+      transform: translateY(80px); opacity: 0; transition: all 0.25s;
+    }
+    .toast.show { transform: translateY(0); opacity: 1; }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <div class="brand">
+      <div class="brand-icon">P</div>
+      <div>
+        <div class="brand-title">SmartPark Portalı</div>
+      </div>
+      <span class="patent-tag">PATENT: TR 2026/014052</span>
+    </div>
+    <div class="nav-links">
+      <a href="entrance.html" class="nav-btn">Giriş Kiosku</a>
+      <a href="portal.html" class="nav-btn active">Sürücü Portalı & QR</a>
+      <a href="floor.html" class="nav-btn">Kat Haritası</a>
+      <a href="app.html" class="nav-btn">📱 Müşteri</a>
+      <a href="guard.html" class="nav-btn">👮 Güvenlik</a>
+      <a href="upcoming.html" class="nav-btn">🔮 Yakında Gelecekler</a>
+    </div>
+  </div>
+</header>
+
+<div class="page-container">
+
+  <!-- ☀️ GÜNEŞ ENERJİSİ & TÜKETİM DASHBOARD'U -->
+  <div class="solar-dashboard">
+    <div style="display:flex;justify-content:space-between;align-items:center">
+      <div style="font-size:13px;font-weight:700;color:#334155;text-transform:uppercase">
+        ☀️ Çatı Güneş Enerjisi Santrali (GES) & Tüketim Dengesi
+      </div>
+      <span style="font-size:11px;font-weight:700;color:var(--green);background:var(--green-light);padding:4px 8px;border-radius:6px;border:1px solid var(--green-border)">
+        ● %100 Kendi Kendine Yeten Yeşil Tesis
+      </span>
+    </div>
+
+    <div class="solar-grid">
+      <div class="solar-stat-box">
+        <div style="font-size:11px;color:var(--muted);font-weight:600">Güneşten Üretilen Elektrik</div>
+        <div class="solar-val" style="color:var(--amber)" id="solarGen">1420.0 kWh</div>
+        <div style="font-size:10px;color:var(--muted);margin-top:2px">Bugünkü Çatı Üretimi</div>
+      </div>
+
+      <div class="solar-stat-box">
+        <div style="font-size:11px;color:var(--muted);font-weight:600">Toplam Harcanan Elektrik</div>
+        <div class="solar-val" style="color:#334155" id="solarCons">60.0 kWh</div>
+        <div style="font-size:10px;color:var(--muted);margin-top:2px">EV Şarj + Tesis Aydınlatma</div>
+      </div>
+
+      <div class="solar-stat-box">
+        <div style="font-size:11px;color:var(--muted);font-weight:600">Net Yeşil Enerji Fazlası</div>
+        <div class="solar-val" style="color:var(--green)" id="solarSurplus">+1360.0 kWh</div>
+        <div style="font-size:10px;color:var(--muted);margin-top:2px">Şebekeye Verilen Güç</div>
+      </div>
+
+      <div class="solar-stat-box">
+        <div style="font-size:11px;color:var(--muted);font-weight:600">Tasarruf Tutarı</div>
+        <div class="solar-val" style="color:var(--text)" id="solarSav">₺12,070 TL</div>
+        <div style="font-size:10px;color:var(--muted);margin-top:2px">Sıfır Fatura Maliyeti</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="main-grid">
+    <!-- SOL: DİJİTAL QR KART & REZERVASYON YAPMA -->
+    <div>
+      <div class="qr-card">
+        <div style="font-size:12px;color:var(--muted);font-weight:700;text-transform:uppercase">SmartPark Dijital Geçiş Kartı</div>
+        
+        <div class="qr-toggle" style="margin-top:12px">
+          <button class="qr-tab active" id="tabEntry" onclick="setQRMode('ENTRY')">GİRİŞ QR KODU</button>
+          <button class="qr-tab" id="tabExit" onclick="setQRMode('EXIT')">ÇIKIŞ & ÖDEME QR</button>
+        </div>
+
+        <!-- SVG DİNAMİK QR KODU -->
+        <div class="qr-box" id="qrContainer"></div>
+
+        <div style="font-size:20px;font-weight:800;color:var(--text);letter-spacing:1px" id="dispPlate">34 VIP 1000</div>
+        <div style="font-size:12px;color:var(--green);font-weight:600;margin-top:2px" id="dispModel">TOGG T10X (Kat 1 Zemin Hub)</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:4px" id="dispResCode">Kod: <strong>RES-TOGG</strong> | Ed25519 Korumalı</div>
+
+        <button class="btn btn-green" onclick="triggerGateEntryFromPortal()">
+          📱 Kapıda Tara & Giriş Yap (Bariyeri Aç)
+        </button>
+      </div>
+
+      <!-- HIZLI REZERVASYON FORMU -->
+      <div class="card" style="margin-top:20px">
+        <div class="card-title">
+          <span>📅 Yeni VIP Rezervasyon Oluştur</span>
+          <span style="color:var(--green);font-size:11px;font-weight:700">1000 Kapasite</span>
+        </div>
+
+        <div class="form-group">
+          <label>Araç Modeli</label>
+          <select id="resModelSelect">
+            <optgroup label="Kat 1 Zemin SUV Modeller">
+              <option value="TOGG T10X" selected>TOGG T10X (EV SUV - Kat 1 Hub)</option>
+              <option value="TESLA MODEL Y">Tesla Model Y (EV SUV - Kat 1 Hub)</option>
+              <option value="FORD RANGER RAPTOR">Ford Ranger (3.2 Ton - Kat 1)</option>
+            </optgroup>
+            <optgroup label="Kat 2-5 Üst Kat Sedan Modeller">
+              <option value="TESLA MODEL 3">Tesla Model 3 (EV Sedan - Kat 2)</option>
+              <option value="FIAT EGEA">Fiat Egea (Sedan - Kat 2)</option>
+              <option value="RENAULT CLIO">Renault Clio (Kompakt - Kat 2)</option>
+              <option value="VOLKSWAGEN PASSAT">VW Passat (Sedan - Kat 2)</option>
+            </optgroup>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Plaka Numarası</label>
+          <input id="resPlateInput" value="34 VIP 1000" style="text-transform:uppercase" />
+        </div>
+
+        <!-- ZORUNLU HUKUKİ YÖNETMELİK VE CEZA TAAHHÜTNAMESİ -->
+        <div style="background:#f8fafc;border:1px solid var(--border);border-radius:10px;padding:12px;margin-bottom:14px">
+          <div style="font-size:11px;font-weight:700;color:var(--text);margin-bottom:4px">📜 Hukuki Yönetmelik & Ceza Taahhütnamesi</div>
+          <div style="font-size:10px;color:var(--muted);line-height:1.4;max-height:80px;overflow-y:auto;background:#ffffff;padding:8px;border-radius:6px;border:1px solid #e2e8f0;margin-bottom:8px">
+            • 5 Dk Çıkış İhlali: 2x, 3x, 4x ceza çarpanı ve Kara Liste.<br>
+            • ♿ Engelli Alanı Haksız İşgali: ₺2.500 İdari Tesis Cezası + Emniyet/Zabıta e-tutanağı.<br>
+            • ⚡ Yeşil Enerji (ICEing) Şarj Engeli: Saatlik ₺350 fırsat maliyeti tazminatı.<br>
+            • 🌸 Kadın/Aile Usulsüz Parkı: 15 dk sonra saatlik 3x ceza tarifesi.<br>
+            • 🛑 Ağır Araç Spiral Rampa İhlali: ₺5.000 Statik Risk Cezası.
+          </div>
+          <label style="display:flex;align-items:flex-start;gap:6px;font-size:11px;font-weight:600;color:var(--text);cursor:pointer">
+            <input type="checkbox" id="chkPortalTerms" style="margin-top:2px" checked />
+            <span>SmartPark Tesis ve Ceza Şartlarını Okudum, Aynen Kabul Ediyorum.</span>
+          </label>
+        </div>
+
+        <button class="btn btn-dark" onclick="createNewReservation()">
+          ✨ Rezervasyon Oluştur & QR Üret
+        </button>
+      </div>
+    </div>
+
+    <!-- SAĞ: AKTİF REZERVASYONLAR, CANLI ÜCRET & DEVİR -->
+    <div>
+      <!-- AKTİF REZERVASYONLAR TABLOSU -->
+      <div class="card">
+        <div class="card-title">
+          <span>📋 Kayıtlı Rezervasyonlarım</span>
+          <span style="color:var(--muted);font-size:11px">Toplam: <strong id="resCount">3</strong></span>
+        </div>
+        <div class="res-list" id="resListContainer"></div>
+      </div>
+
+      <!-- CANLI ÜCRET VE DAKİKA HESABI -->
+      <div class="card">
+        <div class="card-title">
+          <span>⏱️ Canlı Park ve Kademeli Ücret Takibi</span>
+          <span style="color:var(--green)">● DAKİKA HASSASİYETLİ</span>
+        </div>
+
+        <div style="background:#f8fafc;border:1px solid var(--border);border-radius:12px;padding:18px;text-align:center;margin-bottom:14px">
+          <div style="font-size:11px;color:var(--muted);margin-bottom:4px">Otoparkta Geçen Süre</div>
+          <div style="font-size:22px;font-weight:800;color:var(--text)">0 Saat 45 Dakika</div>
+          <div style="font-size:32px;font-weight:900;color:var(--green);letter-spacing:-1px">₺45.00</div>
+          <div style="font-size:10px;color:var(--muted);margin-top:4px">İlk 60 dk: 1.0 TL/dk | 60+ dk: Saat tabanı + artık dakika formülü</div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+          <div style="background:#f8fafc;padding:12px;border-radius:10px;border:1px solid var(--border)">
+            <div style="font-size:11px;color:var(--muted)">⚡ 120kW EV Tüketimi</div>
+            <div style="font-size:15px;font-weight:800;color:var(--text)">30.0 kWh (₺255.00)</div>
+          </div>
+          <div style="background:#f8fafc;padding:12px;border-radius:10px;border:1px solid var(--border)">
+            <div style="font-size:11px;color:var(--muted)">🧾 Fatura Durumu</div>
+            <div style="font-size:13px;font-weight:700;color:var(--text)">E-Fatura Kesildi</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 2FA SÜRÜCÜ RUHSAT DEVRİ -->
+      <div class="card">
+        <div class="card-title">
+          <span>🛡️ 2FA Araç Ruhsat Devir Modülü (Patent İstem 4)</span>
+          <span style="color:var(--green)">GÜVENLİ SİCİL</span>
+        </div>
+        <div style="font-size:12px;color:var(--muted);line-height:1.6;margin-bottom:14px">
+          Aracınızı sattığınızda 2FA kodu ile devir yapın; geçmiş cezalarınız yeni alıcıya geçmez, yeni sahip temiz sicille başlar.
+        </div>
+        <div style="display:flex;gap:8px">
+          <input placeholder="Yeni Sahibin T.C. Kimlik No veya Telefonu" style="flex:1" />
+          <button onclick="showToast('✅ 2FA Doğrulama Kodu SMS ile Gönderildi!')" class="btn btn-dark" style="width:auto;padding:10px 18px">
+            📲 2FA Devir Başlat
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  let qrMode = 'ENTRY';
+
+  function generateQRCodeSVG(text) {
+    return `
+      <svg viewBox="0 0 160 160" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
+        <rect width="160" height="160" fill="#ffffff" rx="8"/>
+        
+        <!-- Sol Üst Finder -->
+        <rect x="15" y="15" width="38" height="38" fill="#18181b" rx="4"/>
+        <rect x="23" y="23" width="22" height="22" fill="#ffffff" rx="2"/>
+        <rect x="28" y="28" width="12" height="12" fill="#18181b" rx="1"/>
+
+        <!-- Sağ Üst Finder -->
+        <rect x="107" y="15" width="38" height="38" fill="#18181b" rx="4"/>
+        <rect x="115" y="23" width="22" height="22" fill="#ffffff" rx="2"/>
+        <rect x="120" y="28" width="12" height="12" fill="#18181b" rx="1"/>
+
+        <!-- Sol Alt Finder -->
+        <rect x="15" y="107" width="38" height="38" fill="#18181b" rx="4"/>
+        <rect x="23" y="115" width="22" height="22" fill="#ffffff" rx="2"/>
+        <rect x="28" y="120" width="12" height="12" fill="#18181b" rx="1"/>
+
+        <!-- Matris Noktaları -->
+        <rect x="65" y="20" width="8" height="8" fill="#18181b"/>
+        <rect x="80" y="20" width="8" height="8" fill="#18181b"/>
+        <rect x="65" y="35" width="8" height="8" fill="#18181b"/>
+        <rect x="90" y="35" width="8" height="8" fill="#18181b"/>
+
+        <rect x="20" y="65" width="8" height="8" fill="#18181b"/>
+        <rect x="35" y="65" width="8" height="8" fill="#18181b"/>
+        <rect x="50" y="65" width="8" height="8" fill="#18181b"/>
+        <rect x="70" y="65" width="14" height="14" fill="#059669" rx="3"/>
+        <rect x="92" y="65" width="8" height="8" fill="#18181b"/>
+        <rect x="110" y="65" width="8" height="8" fill="#18181b"/>
+        <rect x="130" y="65" width="8" height="8" fill="#18181b"/>
+
+        <rect x="20" y="80" width="8" height="8" fill="#18181b"/>
+        <rect x="40" y="80" width="8" height="8" fill="#18181b"/>
+        <rect x="60" y="80" width="8" height="8" fill="#18181b"/>
+        <rect x="80" y="80" width="8" height="8" fill="#18181b"/>
+        <rect x="100" y="80" width="8" height="8" fill="#18181b"/>
+        <rect x="120" y="80" width="8" height="8" fill="#18181b"/>
+
+        <rect x="65" y="105" width="8" height="8" fill="#18181b"/>
+        <rect x="85" y="105" width="8" height="8" fill="#18181b"/>
+        <rect x="105" y="105" width="8" height="8" fill="#18181b"/>
+        <rect x="125" y="105" width="8" height="8" fill="#18181b"/>
+      </svg>
+    `;
+  }
+
+  function setQRMode(mode) {
+    qrMode = mode;
+    document.getElementById('tabEntry').classList.toggle('active', mode === 'ENTRY');
+    document.getElementById('tabExit').classList.toggle('active', mode === 'EXIT');
+    render();
+  }
+
+  function createNewReservation() {
+    const model = document.getElementById('resModelSelect').value;
+    const plate = document.getElementById('resPlateInput').value.trim();
+    const termsAccepted = document.getElementById('chkPortalTerms')?.checked;
+
+    if (!termsAccepted) {
+      showToast('⚠️ Lütfen önce Hukuki Yönetmelik ve Ceza Şartlarını onaylayın!');
+      return;
+    }
+
+    if (!plate) {
+      showToast('Lütfen geçerli bir plaka girin!');
+      return;
+    }
+
+    SP.recordLegalConsent(true);
+    const r = SP.createReservation(plate, model, 'NONE');
+    showToast(`✅ ${r.reservation.code} VIP Rezervasyon Başarıyla Oluşturuldu!`);
+    render();
+  }
+
+  function selectActiveReservation(code) {
+    const db = SP.getDB();
+    const res = db.reservations.find(r => r.code === code);
+    if (!res) return;
+
+    document.getElementById('dispPlate').textContent = res.plate;
+    document.getElementById('dispModel').textContent = `${res.model} (${res.floorName})`;
+    document.getElementById('dispResCode').innerHTML = `Mod: <strong>${qrMode === 'ENTRY' ? 'GİRİŞ BARKODU' : 'ÇIKIŞ/ÖDEME BARKODU'}</strong> | Kod: <strong>${res.code}</strong>`;
+    document.getElementById('qrContainer').innerHTML = generateQRCodeSVG(res.code);
+    showToast(`📌 ${res.code} Dijital Kartı Seçildi!`);
+  }
+
+  function triggerGateEntryFromPortal() {
+    const db = SP.getDB();
+    const activeRes = (db.reservations || []).find(r => r.status === 'ACTIVE');
+
+    if (!activeRes) {
+      showToast('Aktif bir rezervasyon bulunamadı. Lütfen yeni bir rezervasyon oluşturun.');
+      return;
+    }
+
+    const r = SP.verifyReservationEntry(activeRes.code);
+    if (r.error) {
+      showToast('❌ ' + r.error);
+    } else {
+      showToast(`🎉 ${r.message} — Bariyer Açıldı!`);
+    }
+    render();
+  }
+
+  function render() {
+    const db = SP.getDB();
+    if (!db) return;
+
+    const stats = SP.getStats();
+    if (stats) {
+      document.getElementById('solarGen').textContent = stats.solarGenerated + ' kWh';
+      document.getElementById('solarCons').textContent = stats.evConsumption + ' kWh';
+      document.getElementById('solarSurplus').textContent = '+' + stats.netGreenSurplus + ' kWh';
+      document.getElementById('solarSav').textContent = '₺' + stats.solarSavingsTl.toLocaleString('tr-TR') + ' TL';
+    }
+
+    const resList = db.reservations || [];
+    document.getElementById('resCount').textContent = resList.length;
+
+    const activeRes = resList.find(r => r.status === 'ACTIVE') || resList[0] || { code: 'RES-TOGG', plate: '34 VIP 1000', model: 'TOGG T10X', floorName: 'Kat 1 (Zemin)' };
+
+    document.getElementById('dispPlate').textContent = activeRes.plate;
+    document.getElementById('dispModel').textContent = `${activeRes.model} (${activeRes.floorName || 'Kat 1'})`;
+    document.getElementById('dispResCode').innerHTML = `Mod: <strong>${qrMode === 'ENTRY' ? 'GİRİŞ BARKODU' : 'ÇIKIŞ/ÖDEME BARKODU'}</strong> | Kod: <strong>${activeRes.code}</strong>`;
+    document.getElementById('qrContainer').innerHTML = generateQRCodeSVG(activeRes.code);
+
+    document.getElementById('resListContainer').innerHTML = resList.map(r => `
+      <div class="res-item">
+        <div>
+          <div style="font-weight:700;color:var(--text)">${r.plate} — ${r.model}</div>
+          <div style="font-size:11px;color:var(--muted)">Kod: <strong>${r.code}</strong> | ${r.floorName} / ${r.slotCode}</div>
+        </div>
+        <div style="display:flex;gap:6px;align-items:center">
+          <span style="font-size:10px;font-weight:700;padding:3px 8px;border-radius:6px;background:${r.status==='ACTIVE'?'var(--green-light)':'#f1f5f9'};color:${r.status==='ACTIVE'?'var(--green)':'var(--muted)'}">
+            ${r.status==='ACTIVE'?'AKTİF':'KULLANILDI'}
+          </span>
+          <button onclick="selectActiveReservation('${r.code}')" style="padding:4px 10px;border-radius:6px;border:1px solid var(--border);background:#ffffff;color:var(--text);font-size:11px;cursor:pointer">
+            Seç ➔
+          </button>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.className = 'toast show';
+    setTimeout(() => t.classList.remove('show'), 3500);
+  }
+
+  SP.onUpdate(() => render());
+  render();
+</script>
+</body>
+</html>

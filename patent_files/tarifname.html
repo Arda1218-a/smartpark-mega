@@ -1,0 +1,16 @@
+<!DOCTYPE html><html><head><meta charset='utf-8'><style>body{font-family:Arial,sans-serif;font-size:11pt;line-height:1.5;margin:50px;text-align:justify;}</style></head><body>
+<h2 style='text-align:center;'>TARİFNAME</h2>
+<p style='text-align:center;'><b>FİZİKSEL BOYUT VE AKS YÜKÜ FİLTRELİ, ÇOK KAPILI VARYANS MİNİMİZASYONLU DENGELİ OTOPARK İŞLETİM VE DENETİM SİSTEMİ</b></p>
+<h3>A. Buluşun İlgili Olduğu Teknik Alan</h3>
+<p>Buluş; akıllı ulaşım sistemleri (ITS), otopark yönetim altyapıları, araç ağırlık ve boyut algılama sensörleri, dağıtık kapı kuyruk arbitrajı ve elektrikli araç şarj yönetim teknolojileri ile ilgilidir.</p>
+<h3>B. Tekniğin Bilinen Durumu (Önceki Teknik)</h3>
+<p>Geleneksel otopark sistemlerinde araçlar boş bir kata veya ilk kata sırayla yığılmakta, bu durum kat rampalarında ve koridorlarda trafik kilitlenmelerine yol açmaktadır. Ayrıca yüksek tavanlı veya ağır tonajlı araçların tavan yüksekliği ve zemin taşıma kapasitesi kontrol edilmeksizin üst katlara kabul edilmesi ciddi yapısal hasarlara sebep olmaktadır.</p>
+<h3>C. Buluşun Çözdüğü Teknik Problemler</h3>
+<p>1. Rampa ve koridorlardaki araç yığılmalarını kat doluluk varyansını minimize ederek engellemek.<br>2. Ağır ve yüksek araçların üst kat tavan ve zeminlerine zarar vermesini giriş kantar/LiDAR filtresiyle fiziksel olarak önlemek.<br>3. Araç satışlarında geçmiş cezaların yeni araç sahibine geçmesini engelleyen 2 adımlı sürücü-plaka ayrıştırma altyapısı sunmak.<br>4. Elektrikli araçların normal park yerine gitmeyip doğrudan şarj istasyonuna yönelmesi durumunda ceza kesilmesini önleyen akıllı tarife geçişi sağlamak.</p>
+<h3>D. Şekillerin Açıklaması</h3>
+<p><b>Şekil 1:</b> Çok kapılı giriş sensör dizisi ve merkezi işlem mimarisi blok diyagramı.<br><b>Şekil 2:</b> Varyans minimizasyonlu dengeli kat doluluk algoritması akış şeması.<br><b>Şekil 3:</b> 2 Adımlı araç sahiplik devri ve sürücü ceza ayrıştırma protokolü.</p>
+<h3>E. Parça ve Referans Numaraları</h3>
+<p>(10) Merkezi Kontrol ve Dağıtım Ünitesi<br>(11) Aks Kantarı (Load-Cell Ağırlık Sensörü)<br>(12) LiDAR / Lazer Tavan Yükseklik Sensörü<br>(13) Dağıtık Giriş Kapıları<br>(14) Güvenlik Bariyeri ve Hibrit Bilet Yazıcı<br>(15) 120 kW Hızlı DC EV Şarj İstasyonları<br>(16) Çıkış Bypass ve Tahliye Şeridi<br>(20) 2FA Araç Sahiplik Devir Modülü<br>(21) Sürücü Kimlik ve Ceza Veritabanı</p>
+<h3>F. Buluşun Detaylı Açıklaması</h3>
+<p>Giriş kapısına (13) yanaşan bir aracın ağırlığı aks kantarı (11) ile, tavan yüksekliği LiDAR sensörü (12) ile ölçülür. Ölçülen kütle değeri 2500 kg'dan veya yükseklik değeri 2100 mm'den büyükse, merkezi kontrol ünitesi (10) bu aracı zorunlu olarak yalnızca Kat 1'deki güçlendirilmiş slotlara tahsis eder. Kat 1 dolu ise güvenlik bariyeri (14) açılmaz ve araç çıkış bypass şeridine (16) yönlendirilir. Standart araçlar için merkezi kontrol ünitesi (10), katlar arasındaki doluluk varyansını minimize edecek şekilde en az dolu kata dinamik yönlendirme yapar.</p>
+</body></html>

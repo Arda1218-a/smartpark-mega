@@ -1,0 +1,754 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SmartPark — Sürücü Mobil Uygulaması & Otonom Rota (AVP)</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet" />
+  <script src="smartpark.js"></script>
+  <style>
+    :root {
+      --bg: #f1f5f9;
+      --phone-bg: #ffffff;
+      --border: #e2e8f0;
+      --text: #0f172a;
+      --muted: #64748b;
+      --dark-btn: #18181b;
+      --green: #059669;
+      --green-light: #ecfdf5;
+      --green-border: #a7f3d0;
+      --amber: #d97706;
+      --amber-light: #fffbeb;
+      --amber-border: #fde68a;
+      --rose: #e11d48;
+      --rose-light: #fff1f2;
+      --rose-border: #fecdd3;
+      --font-mono: 'JetBrains Mono', monospace;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif;
+      min-height: 100vh; display: flex; flex-direction: column; align-items: center; padding: 24px 16px;
+    }
+
+    /* ÜST BİLGİ & NAVİGASYON */
+    .top-bar {
+      max-width: 900px; width: 100%; display: flex; justify-content: space-between;
+      align-items: center; margin-bottom: 20px; background: #ffffff; padding: 12px 20px;
+      border-radius: 12px; border: 1px solid var(--border);
+    }
+    .nav-btn {
+      padding: 6px 12px; border-radius: 6px; font-size: 12px; font-weight: 600; text-decoration: none;
+      border: 1px solid var(--border); background: #ffffff; color: var(--text);
+    }
+    .nav-btn:hover { background: #f8fafc; }
+
+    /* MOBİL TELEFON KASASI */
+    .phone-container {
+      width: 400px; height: 860px; background: #000000; border-radius: 46px;
+      padding: 12px; box-shadow: 0 25px 60px rgba(0,0,0,0.18); position: relative;
+      border: 4px solid #334155;
+    }
+    .phone-screen {
+      width: 100%; height: 100%; background: #ffffff; border-radius: 36px;
+      overflow-y: auto; display: flex; flex-direction: column; position: relative;
+    }
+    .phone-screen::-webkit-scrollbar { display: none; }
+
+    /* TELEFON STATUS BAR */
+    .status-bar {
+      padding: 10px 20px 6px; display: flex; justify-content: space-between;
+      font-size: 12px; font-weight: 700; color: #000000; background: #ffffff;
+    }
+    .notch {
+      width: 120px; height: 22px; background: #000000; border-radius: 0 0 14px 14px;
+      margin: 0 auto;
+    }
+
+    /* APP İÇERİK */
+    .app-header {
+      padding: 12px 18px; border-bottom: 1px solid var(--border);
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    .app-body { padding: 14px; flex: 1; display: flex; flex-direction: column; gap: 12px; }
+
+    .app-card {
+      background: #f8fafc; border: 1px solid var(--border); border-radius: 16px;
+      padding: 14px;
+    }
+
+    /* NAVİGASYON OKU & SLOT */
+    .nav-slot-box {
+      background: #18181b; color: #ffffff; border-radius: 16px; padding: 16px;
+      text-align: center;
+    }
+
+    /* WAYPOINT ROTA LİSTESİ */
+    .waypoint-step {
+      display: flex; gap: 10px; align-items: flex-start; padding: 8px 10px;
+      border-radius: 8px; border: 1px solid var(--border); background: #ffffff;
+      margin-bottom: 6px; font-size: 11px; transition: all 0.2s;
+    }
+    .waypoint-step.active {
+      background: var(--green-light); border-color: var(--green-border);
+      box-shadow: 0 2px 8px rgba(5, 150, 105, 0.15);
+    }
+    .waypoint-step.done {
+      background: #f1f5f9; opacity: 0.7;
+    }
+
+    .step-badge {
+      width: 22px; height: 22px; border-radius: 50%; background: #e2e8f0;
+      color: #334155; display: flex; align-items: center; justify-content: center;
+      font-weight: 800; font-size: 10px; flex-shrink: 0;
+    }
+    .waypoint-step.active .step-badge {
+      background: var(--green); color: #ffffff;
+    }
+    .waypoint-step.done .step-badge {
+      background: #0f172a; color: #ffffff;
+    }
+
+    .progress-bar-bg {
+      height: 6px; background: #e2e8f0; border-radius: 99px; overflow: hidden; margin: 8px 0;
+    }
+    .progress-bar-fill {
+      height: 100%; background: var(--green); border-radius: 99px; transition: width 0.3s;
+    }
+
+    .btn {
+      width: 100%; padding: 11px; border: none; border-radius: 10px; font-size: 12px; font-weight: 700;
+      cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px;
+      transition: all 0.15s;
+    }
+    .btn-dark { background: var(--dark-btn); color: #ffffff; }
+    .btn-green { background: var(--green); color: #ffffff; }
+    .btn-rose { background: var(--rose); color: #ffffff; }
+    .btn-outline { background: #ffffff; border: 1px solid var(--border); color: var(--text); }
+
+    /* TAB BAR */
+    .tab-bar {
+      background: #ffffff; border-top: 1px solid var(--border); padding: 10px 16px;
+      display: flex; justify-content: space-around;
+    }
+    .tab-item {
+      font-size: 11px; font-weight: 700; color: var(--muted); cursor: pointer; text-align: center;
+    }
+    .tab-item.active { color: var(--text); }
+
+    /* MODALLAR */
+    .app-modal {
+      position: absolute; inset: 0; background: rgba(15, 23, 42, 0.5);
+      z-index: 999; display: none; align-items: center; justify-content: center;
+      padding: 16px; backdrop-filter: blur(4px); pointer-events: none;
+    }
+    .app-modal.show { display: flex !important; pointer-events: auto; }
+    .app-modal-content {
+      background: #ffffff; border-radius: 20px; padding: 20px; width: 100%;
+      max-height: 80%; overflow-y: auto; box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+    }
+
+    .toast {
+      position: fixed; bottom: 24px; right: 24px; padding: 12px 20px; border-radius: 8px;
+      font-size: 13px; font-weight: 600; z-index: 99999;
+      background: var(--dark-btn); color: #ffffff;
+      transform: translateY(80px); opacity: 0; transition: all 0.25s;
+    }
+    .toast.show { transform: translateY(0); opacity: 1; }
+  </style>
+</head>
+<body>
+
+<div class="top-bar">
+  <div>
+    <strong style="font-size:14px">📱 Sürücü Mobil Uygulaması & Otonom Vale Park (AVP)</strong>
+    <div style="font-size:11px;color:var(--muted)">ISO 23374 V2I Standartlarında Dinamik Kat & Rampa Navigasyonu</div>
+  </div>
+  <div style="display:flex;gap:8px">
+    <a href="entrance.html" class="nav-btn">🚗 Giriş Kiosku</a>
+    <a href="floor.html" class="nav-btn">🗺️ Kat Haritası</a>
+    <a href="guard.html" class="nav-btn">👮 Güvenlik Terminali</a>
+    <a href="upcoming.html" class="nav-btn">🔮 Yakında Gelecekler</a>
+  </div>
+</div>
+
+<div class="phone-container">
+  <div class="phone-screen">
+    <div class="notch"></div>
+    <div class="status-bar">
+      <span>09:41</span>
+      <span>5G 🔋 %98</span>
+    </div>
+
+    <!-- APP HEADER & ARAÇ SEÇİCİ -->
+    <div class="app-header">
+      <div>
+        <div style="font-size:10px;color:var(--muted);font-weight:700">AKTİF ARAÇ</div>
+        <select id="vehSelector" onchange="onSelectVehicle()" style="border:none;background:transparent;font-size:13px;font-weight:800;color:var(--text);cursor:pointer;outline:none">
+          <option value="default">34 VIP 1000 — TOGG T10X</option>
+        </select>
+      </div>
+      <span id="appStatusBadge" style="font-size:10px;font-weight:700;color:var(--green);background:var(--green-light);padding:4px 8px;border-radius:6px">
+        ● CANLI PARKTA
+      </span>
+    </div>
+
+    <div class="app-body">
+      <!-- 1. CANLI SLOT & NAVİGASYON BİLGİSİ -->
+      <div class="nav-slot-box">
+        <div style="font-size:10px;color:#a1a1aa;text-transform:uppercase;letter-spacing:0.5px">Tahsis Edilen Park Alanınız</div>
+        <div style="font-size:26px;font-weight:900;color:#ffffff;margin:4px 0" id="mySlot">KAT 1 → C-01</div>
+        <div style="font-size:12px;color:#34d399;font-weight:700" id="myReason">⚡ 120kW EV Şarj Hubı</div>
+        <div style="font-size:11px;color:#e4e4e7;margin-top:8px;border-top:1px solid #334155;padding-top:8px" id="navSummary">
+          🧭 <strong>Mesafe:</strong> 68m | <strong>İrtifa:</strong> +0.0m | <strong>Süre:</strong> ~27 sn
+        </div>
+      </div>
+
+      <!-- 2. 🚀 OTONOM VALE PARK (AVP) DİNAMİK ROTA GRAFI & SİMÜLASYONU -->
+      <div class="app-card">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+          <span style="font-size:11px;font-weight:800;color:var(--text)">🚀 OTONOM VALE ROTA GRAFI (V2I)</span>
+          <span id="routeProgressPct" style="font-size:10px;font-weight:700;color:var(--green)">Adım 1/6</span>
+        </div>
+        <div style="font-size:10px;color:var(--muted);margin-bottom:8px">
+          Sürücüsüz otonom sürüş koordinatları (ISO 23374):
+        </div>
+
+        <div class="progress-bar-bg">
+          <div class="progress-bar-fill" id="routeProgressBar" style="width: 16%"></div>
+        </div>
+
+        <!-- ADIM ADIM WAYPOINT LİSTESİ -->
+        <div id="waypointList" style="max-height: 220px; overflow-y: auto; margin-bottom: 10px;"></div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
+          <button class="btn btn-dark" id="btnSimDrive" onclick="startAutonomousDriveSimulation()">
+            ▶️ Otonom Sür
+          </button>
+          <button class="btn btn-outline" id="btnSummon" onclick="startSummonSimulation()">
+            🛎️ Kapıya Çağır
+          </button>
+        </div>
+      </div>
+
+      <!-- 3. ELEKTRİKLİ ARAÇ ŞARJ & VALE GÖREVLİSİ DURUMU -->
+      <div class="app-card" id="evCard">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+          <span style="font-size:11px;font-weight:700;color:var(--muted)">⚡ 120kW DC ŞARJ DURUMU</span>
+          <span id="valetStatusBadge" style="font-size:10px;font-weight:700;color:var(--green);background:var(--green-light);padding:2px 6px;border-radius:4px">
+            ŞARJ OLUYOR
+          </span>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div>
+            <div style="font-size:18px;font-weight:800;color:var(--text)" id="batteryVal">%85 Doldu</div>
+            <div style="font-size:11px;color:var(--muted)" id="kwhCost">30.0 kWh Tüketildi (₺255.00)</div>
+          </div>
+          <button onclick="simValetUnplug()" style="padding:6px 10px;border-radius:8px;border:1px solid var(--border);background:#ffffff;font-size:11px;font-weight:700;cursor:pointer">
+            🔌 Fişi Çek
+          </button>
+        </div>
+        <div style="font-size:10px;color:var(--muted);margin-top:6px;line-height:1.4">
+          💡 <strong>Akıllı Vale:</strong> Şarj %100 olunca pompa görevlisi fişi çıkarır, istasyon işgal edilmez.
+        </div>
+      </div>
+
+      <!-- 4. 🔑 MANUEL VALE & AKILLI ANAHTAR KASASI (SMART KEY LOCKER) -->
+      <div class="app-card" id="manualValetCard">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+          <span style="font-size:11px;font-weight:700;color:var(--muted)">🔑 MANUEL VALE & AKILLI KASA</span>
+          <span style="font-size:10px;font-weight:700;color:var(--amber);background:var(--amber-light);padding:2px 6px;border-radius:4px">
+            OTONOM OLMAYAN ARAÇLAR
+          </span>
+        </div>
+        <div style="font-size:11px;color:var(--muted);margin-bottom:8px">
+          Aracınızda otonom park yoksa anahtarı valeye teslim edip akıllı kasada şifreli muhafaza edin:
+        </div>
+
+        <div id="valetLockerInfoBox" style="display:none;background:#ffffff;border:1px solid var(--border);padding:10px;border-radius:10px;margin-bottom:8px">
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <strong style="color:var(--green);font-size:13px" id="valetBoxNo">KASA-04</strong>
+            <span style="font-family:var(--font-mono);font-size:12px;font-weight:800;color:var(--dark-btn)" id="valetPinDisplay">PIN: ****</span>
+          </div>
+          <div style="font-size:10px;color:var(--muted);margin-top:4px" id="valetRfidDisplay">RFID: RFID-KEY-8812</div>
+          <div style="font-size:10px;color:var(--green);font-weight:600;margin-top:2px">🔒 Anahtar kameralı kasada kilitli.</div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
+          <button class="btn btn-dark" onclick="doRequestManualValet()">
+            🛎️ Vale Çağır (₺150)
+          </button>
+          <button class="btn btn-outline" onclick="doUnlockKeyLocker()">
+            🔓 Anahtarı Al
+          </button>
+        </div>
+      </div>
+
+      <!-- 5. CANLI SÜRE & 5 DAKİKA ÇIKIŞ İHLALİ GERİ SAYIM SAYACI -->
+      <div class="app-card">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+          <span style="font-size:11px;font-weight:700;color:var(--muted)">⏱️ PARK SÜRESİ & ÜCRET</span>
+          <span style="font-size:12px;font-weight:800;color:var(--green)" id="livePrice">₺45.00</span>
+        </div>
+        <div style="font-size:12px;font-weight:700;color:var(--text)" id="liveDuration">Toplam Süre: 45 Dakika</div>
+
+        <!-- HUKUKİ CEZA VE İDARİ İHLAL DÖKÜMÜ (VARSA) -->
+        <div id="citationAlertContainer" style="display:none;background:var(--rose-light);border:1px solid var(--rose-border);padding:10px;border-radius:10px;margin-top:8px;font-size:11px;color:var(--rose);line-height:1.4">
+          <div style="font-weight:800;display:flex;justify-content:space-between">
+            <span>⚖️ TAHAKKUK EDEN İDARİ CEZA:</span>
+            <span id="citationTotalFineDisplay">₺0.00</span>
+          </div>
+          <div id="citationDetailList" style="font-size:10px;margin-top:4px;color:#9f1239"></div>
+        </div>
+
+        <!-- CANLI 5 DAKİKA GERİ SAYIM SAYACI (ÖDEME SONRASI AKTİF) -->
+        <div id="overstayCountdownBox" style="background:var(--amber-light);border:1px solid var(--amber-border);padding:10px;border-radius:10px;margin-top:8px;font-size:11px;color:var(--amber);line-height:1.4">
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <strong>⚠️ 5 Dk Çıkış Toleransı:</strong>
+            <span id="countdownTimer" style="font-size:13px;font-family:var(--font-mono);font-weight:800;color:var(--rose)">05:00</span>
+          </div>
+          <div style="font-size:10px;margin-top:4px">
+            Ödeme yapıldıktan sonra 5 dakika içinde bariyerden çıkılmazsa <strong>2x, 3x ve 4x</strong> kat ceza uygulanır.
+          </div>
+        </div>
+      </div>
+
+      <!-- 5. ÇIKIŞ & ÖDEME TEST BUTONLARI -->
+      <div class="app-card" style="margin-bottom:10px">
+        <div style="font-size:11px;font-weight:700;color:var(--muted);margin-bottom:6px">🧪 ÇIKIŞ & CEZA TESTİ</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:8px">
+          <button class="btn btn-green" onclick="testExitSimulation(0)">
+            ✅ Zamanında (0 Dk)
+          </button>
+          <button class="btn btn-rose" onclick="testExitSimulation(15)">
+            🚨 15 Dk Gecikmeli (2x)
+          </button>
+        </div>
+        <button class="btn btn-dark" onclick="openExitQRModal()">
+          📲 Çıkış & Ödeme QR Kodumu Aç
+        </button>
+      </div>
+    </div>
+
+    <!-- ALT TAB MENÜ -->
+    <div class="tab-bar">
+      <div class="tab-item active" onclick="switchTab('home')">🚗 Parkım</div>
+      <div class="tab-item" onclick="switchTab('invoices')">🧾 Faturalar</div>
+      <div class="tab-item" onclick="switchTab('auth')">🛡️ 2FA Devir</div>
+      <div class="tab-item" onclick="switchTab('legal')">📜 Şartlar</div>
+    </div>
+
+    <!-- FATURALAR MODALI -->
+    <div class="app-modal" id="invoicesModal">
+      <div class="app-modal-content">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+          <strong style="font-size:14px">🧾 Geçmiş Park Faturaları</strong>
+          <button onclick="closeModals()" style="border:none;background:transparent;font-size:16px;cursor:pointer">✕</button>
+        </div>
+        <div id="invoiceListContainer" style="font-size:11px"></div>
+      </div>
+    </div>
+
+    <!-- 2FA DEVİR MODALI -->
+    <div class="app-modal" id="authModal">
+      <div class="app-modal-content">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+          <strong style="font-size:14px">🛡️ 2FA Ruhsat Devir Onayı</strong>
+          <button onclick="closeModals()" style="border:none;background:transparent;font-size:16px;cursor:pointer">✕</button>
+        </div>
+        <div style="font-size:11px;color:var(--muted);margin-bottom:10px">
+          Patent korumalı 2 faktörlü doğrulama ile aracınızı vale veya başka bir sürücüye devredin:
+        </div>
+        <div style="background:#f8fafc;border:1px solid var(--border);padding:12px;border-radius:10px;margin-bottom:10px">
+          <div style="font-size:10px;color:var(--muted)">GEÇİCİ DEVİR TOKENİ</div>
+          <div style="font-size:18px;font-family:var(--font-mono);font-weight:900;color:var(--green)">SP-2FA-8894</div>
+          <div style="font-size:9px;color:var(--muted);margin-top:4px">Geçerlilik: 15 Dakika (Tek Kullanımlık)</div>
+        </div>
+        <button class="btn btn-dark" onclick="showToast('✅ 2FA Devir Kodu SMS Olarak Gönderildi.'); closeModals();">
+          📲 Devri Onayla
+        </button>
+      </div>
+    </div>
+
+    <!-- 📜 HUKUKİ YÖNETMELİK & CEZA SÖZLEŞMESİ MODALI -->
+    <div class="app-modal" id="legalTermsModal">
+      <div class="app-modal-content" style="max-height:85%">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+          <div style="display:flex;align-items:center;gap:6px">
+            <span style="font-size:18px">📜</span>
+            <strong style="font-size:14px;color:var(--text)">SmartPark Hukuki Ceza Yönetmeliği</strong>
+          </div>
+          <button onclick="closeModals()" style="border:none;background:transparent;font-size:16px;cursor:pointer">✕</button>
+        </div>
+
+        <div style="max-height:180px;overflow-y:auto;background:#f8fafc;border:1px solid var(--border);border-radius:10px;padding:10px;font-size:11px;line-height:1.5;color:#334155;margin-bottom:12px">
+          <strong>Önemli Yaptırım ve Ceza Maddeleri (TBK & KTK):</strong><br>
+          • <strong>5 Dakika Çıkış Kuralı:</strong> Ödeme sonrası 5 dakika içinde çıkış zorunludur. Aşılan her süre için 1. İhlal 2x, 2. İhlal 3x, 3. İhlal 4x ve kalıcı Kara Liste uygulanır.<br>
+          • <strong>♿ Engelli Alanı (Row A) İhlali:</strong> Haksız ve belgesiz işgalde ₺2.500 İdari Tesis Cezası kesilir ve emniyet/zabıta e-tutanağı düzenlenir.<br>
+          • <strong>⚡ Yeşil Enerji / Şarj İstasyonu (Row C) İhlali (ICEing):</strong> Şarj ünitesinin işgali halinde saatlik ₺350 fırsat maliyeti tazminatı yansıtılır.<br>
+          • <strong>🌸 Kadın / Aile Alanı (Row B) İhlali:</strong> 15 dk içinde alan terk edilmezse saatlik ücrete 3x ceza işletilir.<br>
+          • <strong>🛑 Statik Rampa / Aşırı Ağırlık:</strong> Kat 2–5 kule rampalarına ağır araç sokulması halinde ₺5.000 yapısal güvenlik cezası uygulanır.<br>
+          • <strong>Elektronik Delil:</strong> Tavan kameraları ve LiDAR verileri HMK m. 199 kapsamında kesin delil niteliğindedir.
+        </div>
+
+        <label style="display:flex;align-items:flex-start;gap:8px;font-size:11px;font-weight:600;color:var(--text);cursor:pointer;margin-bottom:14px">
+          <input type="checkbox" id="chkLegalConsent" onchange="onToggleLegalCheck()" checked style="margin-top:2px" />
+          <span>SmartPark Kullanım ve Ceza Yönetmeliğini, 5 Dakika Çıkış Kuralını ve İdari Yaptırımları Okudum, Aynen Kabul Ediyorum.</span>
+        </label>
+
+        <button class="btn btn-dark" id="btnAcceptLegal" onclick="submitLegalConsent()">
+          ✅ Okudum ve Onaylıyorum
+        </button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  let currentActiveVeh = null;
+  let currentRouteData = null;
+  let activeStepIndex = 0;
+  let driveInterval = null;
+  let countdownSeconds = 300; // 5 mins
+  let countdownTimerId = null;
+
+  function loadVehicles() {
+    const db = SP.getDB();
+    if (!db) return;
+
+    const selector = document.getElementById('vehSelector');
+    selector.innerHTML = '';
+
+    if (!db.vehicles || db.vehicles.length === 0) {
+      selector.innerHTML = `<option value="sample">34 VIP 1000 — TOGG T10X (Kat 1 C-01)</option>`;
+      currentActiveVeh = {
+        plate: '34 VIP 1000', model: 'TOGG T10X', floorId: 1, floorName: 'Kat 1 (Zemin)',
+        slotCode: 'C-01', reason: '⚡ 120kW EV Şarj Hubı', isCharging: true, batteryPct: 85, since: new Date().toISOString()
+      };
+    } else {
+      db.vehicles.forEach((v, idx) => {
+        selector.innerHTML += `<option value="${v.plate}">${v.plate} — ${v.model} (${v.floorName} ${v.slotCode})</option>`;
+      });
+      const selectedPlate = selector.value;
+      currentActiveVeh = db.vehicles.find(v => v.plate === selectedPlate) || db.vehicles[0];
+    }
+  }
+
+  function onSelectVehicle() {
+    const db = SP.getDB();
+    const plate = document.getElementById('vehSelector').value;
+    if (db && db.vehicles) {
+      currentActiveVeh = db.vehicles.find(v => v.plate === plate) || currentActiveVeh;
+    }
+    renderApp();
+  }
+
+  function renderApp() {
+    if (!currentActiveVeh) loadVehicles();
+    const veh = currentActiveVeh;
+
+    document.getElementById('mySlot').textContent = `${veh.floorName} → ${veh.slotCode}`;
+    document.getElementById('myReason').textContent = veh.reason;
+
+    // EV Şarj Kartı
+    const evCard = document.getElementById('evCard');
+    if (veh.isCharging) {
+      evCard.style.display = 'block';
+      document.getElementById('valetStatusBadge').textContent = 'ŞARJ OLUYOR';
+      document.getElementById('valetStatusBadge').style.background = 'var(--green-light)';
+      document.getElementById('valetStatusBadge').style.color = 'var(--green)';
+      document.getElementById('batteryVal').textContent = `%${veh.batteryPct || 85} Doldu`;
+      document.getElementById('kwhCost').textContent = '35.0 kWh Tüketildi (₺297.50)';
+    } else {
+      document.getElementById('valetStatusBadge').textContent = 'FİŞ ÇEKİLDİ (PARKTA)';
+      document.getElementById('valetStatusBadge').style.background = '#f1f5f9';
+      document.getElementById('valetStatusBadge').style.color = '#64748b';
+      document.getElementById('batteryVal').textContent = '%100 Tam Dolu';
+      document.getElementById('kwhCost').textContent = 'Şarj Tamamlandı (Soket Boşaltıldı)';
+    }
+
+    // Dinamik Rota Verisi Üretimi (Hangi Kat ve Slot ise Ona Göre!)
+    currentRouteData = SP.generateAutonomousRoute(veh.floorId || 1, veh.slotCode || 'C-01', veh.model);
+    
+    document.getElementById('navSummary').innerHTML = `
+      🧭 <strong>Mesafe:</strong> ${currentRouteData.totalDistanceM}m | <strong>İrtifa:</strong> +${currentRouteData.elevationM.toFixed(1)}m | <strong>Süre:</strong> ~${currentRouteData.estimatedTimeSec} sn
+    `;
+
+    renderWaypoints();
+    updateLiveFee();
+  }
+
+  function renderWaypoints() {
+    if (!currentRouteData) return;
+    const wList = document.getElementById('waypointList');
+    wList.innerHTML = currentRouteData.waypoints.map((wp, idx) => {
+      let statusClass = '';
+      if (idx === activeStepIndex) statusClass = 'active';
+      else if (idx < activeStepIndex) statusClass = 'done';
+
+      return `
+        <div class="waypoint-step ${statusClass}" id="stepEl_${idx}">
+          <div class="step-badge">${idx + 1}</div>
+          <div style="flex:1">
+            <div style="font-weight:700;display:flex;justify-content:space-between">
+              <span>${wp.icon} ${wp.title}</span>
+              <span style="font-family:var(--font-mono);font-size:10px;color:var(--muted)">${wp.speedKmh} km/s</span>
+            </div>
+            <div style="font-size:10px;color:var(--muted);margin-top:2px;line-height:1.3">${wp.desc}</div>
+          </div>
+        </div>
+      `;
+    }).join('');
+
+    const pct = Math.round(((activeStepIndex + 1) / currentRouteData.waypoints.length) * 100);
+    document.getElementById('routeProgressBar').style.width = `${pct}%`;
+    document.getElementById('routeProgressPct').textContent = `Adım ${activeStepIndex + 1}/${currentRouteData.waypoints.length}`;
+  }
+
+  function startAutonomousDriveSimulation() {
+    if (driveInterval) clearInterval(driveInterval);
+    activeStepIndex = 0;
+    renderWaypoints();
+
+    const btn = document.getElementById('btnSimDrive');
+    btn.textContent = '⏳ Sürüş Devam Ediyor...';
+    btn.disabled = true;
+
+    SP.speakVoice(`Otonom park başlatıldı. Hedef ${currentActiveVeh.floorName} ${currentActiveVeh.slotCode}.`);
+
+    driveInterval = setInterval(() => {
+      activeStepIndex++;
+      if (activeStepIndex >= currentRouteData.waypoints.length) {
+        clearInterval(driveInterval);
+        driveInterval = null;
+        activeStepIndex = currentRouteData.waypoints.length - 1;
+        btn.textContent = '✅ Park Tamamlandı';
+        btn.disabled = false;
+        SP.speakVoice(`Tebrikler. Aracınız ${currentActiveVeh.slotCode} alanına otonom olarak başarıyla park edildi.`);
+        showToast('🎉 Otonom Park Tamamlandı! Tavan yeşil ışığı yandı.');
+      } else {
+        const currWp = currentRouteData.waypoints[activeStepIndex];
+        SP.speakVoice(currWp.title);
+      }
+      renderWaypoints();
+    }, 2400);
+  }
+
+  function startSummonSimulation() {
+    const summonRoute = SP.generateSummonRoute(currentActiveVeh.floorId || 1, currentActiveVeh.slotCode || 'C-01', currentActiveVeh.model);
+    currentRouteData = summonRoute;
+    activeStepIndex = 0;
+    renderWaypoints();
+
+    SP.speakVoice(`Araç slottan uyanıyor. Zemin teslim kapısına doğru iniş başladı.`);
+    showToast('🛎️ Araç otonom olarak kapıya doğru yola çıktı!');
+
+    const btn = document.getElementById('btnSummon');
+    btn.textContent = '⏳ Kapıya Geliyor...';
+    btn.disabled = true;
+
+    if (driveInterval) clearInterval(driveInterval);
+    driveInterval = setInterval(() => {
+      activeStepIndex++;
+      if (activeStepIndex >= currentRouteData.waypoints.length) {
+        clearInterval(driveInterval);
+        driveInterval = null;
+        activeStepIndex = currentRouteData.waypoints.length - 1;
+        btn.textContent = '🎉 Kapıda Bekliyor';
+        btn.disabled = false;
+        SP.speakVoice(`Aracınız kapıya ulaştı. İyi yolculuklar.`);
+        showToast('🎉 Aracınız Giriş Teslim Alanında Sizi Bekliyor!');
+      }
+      renderWaypoints();
+    }, 2200);
+  }
+
+  function updateLiveFee() {
+    const now = new Date();
+    const entry = new Date(currentActiveVeh.since || now);
+    const mins = Math.max(1, Math.round((now - entry) / 60000));
+    const r = SP.calcProgressiveFee(mins, currentActiveVeh.isCharging ? 35 : 0, 0, 0);
+
+    const db = SP.getDB();
+    const userViolations = db?.userViolations?.[currentActiveVeh.plate] || { history: [] };
+    const unpaidCitations = (userViolations.history || []).filter(c => !c.paid);
+    const citationTotal = unpaidCitations.reduce((acc, c) => acc + (c.fineTl || 0), 0);
+    const grandTotal = +(r.totalFee + citationTotal).toFixed(2);
+
+    document.getElementById('liveDuration').textContent = `Toplam Süre: ${r.durationMinutes} Dakika (${r.hours} sa ${r.minutes} dk)`;
+    document.getElementById('livePrice').textContent = `₺${grandTotal}`;
+
+    const citeBox = document.getElementById('citationAlertContainer');
+    if (citationTotal > 0) {
+      citeBox.style.display = 'block';
+      document.getElementById('citationTotalFineDisplay').textContent = `₺${citationTotal.toFixed(2)}`;
+      document.getElementById('citationDetailList').innerHTML = unpaidCitations.map(c => `
+        • <strong>${c.title}</strong>: ₺${c.fineTl} (${c.lawCode})
+      `).join('<br>');
+    } else {
+      citeBox.style.display = 'none';
+    }
+  }
+
+  function doRequestManualValet() {
+    if (!currentActiveVeh) return;
+    const r = SP.requestManualValet(currentActiveVeh.plate, currentActiveVeh.model);
+    if (r.error) {
+      showToast(r.error);
+    } else {
+      document.getElementById('valetLockerInfoBox').style.display = 'block';
+      document.getElementById('valetBoxNo').textContent = r.boxNo;
+      document.getElementById('valetPinDisplay').textContent = `PIN: ${r.pin}`;
+      document.getElementById('valetRfidDisplay').textContent = `RFID: ${r.rfid} (₺${r.valetFeeTl})`;
+      showToast(r.message);
+      SP.speakVoice(`Manuel vale çağrıldı. Anahtarınız ${r.boxNo} numaralı akıllı kasaya teslim edildi. Çıkış şifreniz ${r.pin}.`);
+    }
+  }
+
+  function doUnlockKeyLocker() {
+    if (!currentActiveVeh) return;
+    const pin = prompt('Lütfen akıllı anahtar kasası PIN kodunuzu girin (4 haneli):');
+    if (!pin) return;
+    const r = SP.retrieveKeyFromLocker(currentActiveVeh.plate, pin);
+    if (r.error) {
+      showToast(r.error);
+      SP.speakVoice('Hatalı şifre.');
+    } else {
+      showToast(r.message);
+      document.getElementById('valetLockerInfoBox').style.display = 'none';
+      SP.speakVoice(`Kasa açıldı. Anahtarınızı teslim alabilirsiniz.`);
+    }
+  }
+
+  function checkLegalConsentOnStart() {
+    // Mobil testlerde buton tıklamalarını engellememek için otomatik kilitleme kaldırıldı
+  }
+
+  function onToggleLegalCheck() {
+    const chk = document.getElementById('chkLegalConsent').checked;
+    const btn = document.getElementById('btnAcceptLegal');
+    btn.disabled = !chk;
+    btn.style.opacity = chk ? '1' : '0.5';
+  }
+
+  function submitLegalConsent() {
+    SP.recordLegalConsent(true);
+    closeModals();
+    showToast('✅ Kullanıcı ve Ceza Sözleşmesi Başarıyla Onaylandı.');
+  }
+
+  function simValetUnplug() {
+    const r = SP.valetUnplugVehicle(currentActiveVeh.plate);
+    showToast(r.message || '🔌 Fiş çekildi.');
+    loadVehicles();
+    renderApp();
+  }
+
+  function startCountdown() {
+    if (countdownTimerId) clearInterval(countdownTimerId);
+    countdownSeconds = 300;
+    countdownTimerId = setInterval(() => {
+      countdownSeconds--;
+      if (countdownSeconds <= 0) {
+        clearInterval(countdownTimerId);
+        document.getElementById('countdownTimer').textContent = 'SÜRE BİTTİ (2x CEZA)';
+        document.getElementById('countdownTimer').style.color = 'var(--rose)';
+        SP.speakVoice(`Dikkat! 5 dakika çıkış süreniz doldu. 2 katı ceza tarifesi uygulanıyor.`);
+      } else {
+        const m = Math.floor(countdownSeconds / 60);
+        const s = countdownSeconds % 60;
+        document.getElementById('countdownTimer').textContent = `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+      }
+    }, 1000);
+  }
+
+  function testExitSimulation(overstayMins) {
+    const r = SP.processVehicleExit(currentActiveVeh.plate, overstayMins);
+    if (r.error) {
+      showToast(r.error);
+    } else {
+      showToast(`🎉 ${r.message}`);
+      startCountdown();
+    }
+    loadVehicles();
+    renderApp();
+  }
+
+  function openExitQRModal() {
+    startCountdown();
+    showToast('📲 Dinamik Çıkış QR Kodunuz oluşturuldu. 5 dakikalık çıkış süreniz başladı.');
+  }
+
+  function switchTab(tab) {
+    document.querySelectorAll('.tab-item').forEach(el => el.classList.remove('active'));
+    if (tab === 'home') {
+      document.querySelector('.tab-item:nth-child(1)').classList.add('active');
+    } else if (tab === 'invoices') {
+      document.querySelector('.tab-item:nth-child(2)').classList.add('active');
+      openInvoicesModal();
+    } else if (tab === 'auth') {
+      document.querySelector('.tab-item:nth-child(3)').classList.add('active');
+      document.getElementById('authModal').classList.add('show');
+    } else if (tab === 'legal') {
+      document.querySelector('.tab-item:nth-child(4)').classList.add('active');
+      document.getElementById('legalTermsModal').classList.add('show');
+    }
+  }
+
+  function openInvoicesModal() {
+    const db = SP.getDB();
+    const list = db.history || [];
+    const container = document.getElementById('invoiceListContainer');
+
+    if (list.length === 0) {
+      container.innerHTML = '<div style="color:var(--muted);text-align:center;padding:12px">Henüz tamamlanmış bir çıkış faturası bulunmuyor.</div>';
+    } else {
+      container.innerHTML = list.map((h, idx) => `
+        <div style="background:#f8fafc;border:1px solid var(--border);border-radius:8px;padding:10px;margin-bottom:8px">
+          <div style="display:flex;justify-content:space-between;font-weight:700">
+            <span>${h.plate} — ${h.floorName} ${h.slotCode}</span>
+            <span style="color:var(--green)">₺${h.feeDetails.totalFee}</span>
+          </div>
+          <div style="font-size:10px;color:var(--muted);margin-top:2px">
+            Süre: ${h.feeDetails.durationMinutes} dk | Giriş: ${new Date(h.entry).toLocaleTimeString('tr-TR')} - Çıkış: ${new Date(h.exit).toLocaleTimeString('tr-TR')}
+          </div>
+          ${h.feeDetails.penaltyFee > 0 ? `
+            <div style="font-size:10px;color:var(--rose);font-weight:700;margin-top:2px">
+              ⚠️ ${h.feeDetails.penaltyReason} (+₺${h.feeDetails.penaltyFee})
+            </div>
+          ` : ''}
+        </div>
+      `).join('');
+    }
+
+    document.getElementById('invoicesModal').classList.add('show');
+  }
+
+  function closeModals() {
+    document.querySelectorAll('.app-modal').forEach(m => m.classList.remove('show'));
+    document.querySelectorAll('.tab-item').forEach(el => el.classList.remove('active'));
+    document.querySelector('.tab-item:nth-child(1)').classList.add('active');
+  }
+
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.className = 'toast show';
+    setTimeout(() => t.classList.remove('show'), 3500);
+  }
+
+  SP.onUpdate(() => {
+    loadVehicles();
+    renderApp();
+  });
+
+  loadVehicles();
+  renderApp();
+  checkLegalConsentOnStart();
+  setInterval(updateLiveFee, 30000); // her 30 sn'de bir canlı ücreti güncelle
+</script>
+</body>
+</html>

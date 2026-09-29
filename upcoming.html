@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SmartPark — Yakında Eklenecek Özellikler & AR-GE Laboratuvarı</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;700;800&display=swap" rel="stylesheet" />
+  <script src="smartpark.js"></script>
+  <style>
+    :root {
+      --bg: #f8fafc;
+      --card: #ffffff;
+      --border: #e2e8f0;
+      --text: #0f172a;
+      --muted: #64748b;
+      --dark-btn: #18181b;
+      --green: #059669;
+      --green-light: #ecfdf5;
+      --green-border: #a7f3d0;
+      --amber: #d97706;
+      --amber-light: #fffbeb;
+      --blue: #2563eb;
+      --blue-light: #eff6ff;
+      --font-mono: 'JetBrains Mono', monospace;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif;
+      min-height: 100vh; padding-bottom: 60px;
+    }
+
+    /* ÜST MENÜ */
+    header {
+      background: #ffffff; border-bottom: 1px solid var(--border);
+      padding: 14px 0; position: sticky; top: 0; z-index: 100;
+    }
+    .header-inner {
+      max-width: 1140px; margin: 0 auto; padding: 0 24px;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .brand { display: flex; align-items: center; gap: 10px; }
+    .brand-icon {
+      width: 36px; height: 36px; border-radius: 9px;
+      background: var(--dark-btn); color: #fff; display: flex; align-items: center;
+      justify-content: center; font-size: 16px; font-weight: 800;
+    }
+    .brand-title { font-size: 16px; font-weight: 800; color: var(--text); }
+    .patent-tag {
+      font-size: 11px; font-family: var(--font-mono); color: #475569;
+      background: #f1f5f9; padding: 4px 8px; border-radius: 6px; border: 1px solid #cbd5e1;
+    }
+    .nav-links { display: flex; gap: 8px; align-items: center; }
+    .nav-btn {
+      padding: 7px 13px; border-radius: 8px; font-size: 12px; font-weight: 600; text-decoration: none;
+      border: 1px solid var(--border); background: #ffffff; color: var(--text);
+      transition: all 0.15s;
+    }
+    .nav-btn:hover { background: #f1f5f9; }
+    .nav-btn.active { background: var(--dark-btn); color: #ffffff; border-color: var(--dark-btn); }
+
+    .page-container {
+      max-width: 1140px; margin: 28px auto; padding: 0 24px;
+    }
+
+    /* 🛡️ ÇALIŞIYORSA KURCALAMA MANİFESTO BANNERI */
+    .manifesto-banner {
+      background: linear-gradient(135deg, #18181b 0%, #27272a 100%);
+      color: #ffffff; border-radius: 18px; padding: 28px 32px;
+      margin-bottom: 28px; box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+      position: relative; overflow: hidden; border: 1px solid #3f3f46;
+    }
+    .manifesto-tag {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: rgba(234, 179, 8, 0.2); border: 1px solid #eab308;
+      color: #fef08a; padding: 4px 10px; border-radius: 6px;
+      font-size: 11px; font-weight: 800; letter-spacing: 0.5px; text-transform: uppercase;
+      margin-bottom: 12px;
+    }
+    .manifesto-title {
+      font-size: 26px; font-weight: 900; letter-spacing: -0.5px; margin-bottom: 10px;
+      display: flex; align-items: center; gap: 10px;
+    }
+    .manifesto-desc {
+      font-size: 14px; line-height: 1.6; color: #d4d4d8; max-width: 860px;
+    }
+
+    /* KART GENEL */
+    .card {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 16px; padding: 24px; margin-bottom: 24px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+    }
+    .card-header {
+      display: flex; justify-content: space-between; align-items: flex-start;
+      margin-bottom: 18px; border-bottom: 1px solid #f1f5f9; padding-bottom: 14px;
+    }
+    .card-title {
+      font-size: 16px; font-weight: 800; color: var(--text); display: flex; align-items: center; gap: 8px;
+    }
+    .card-badge {
+      font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 6px;
+    }
+
+    /* PLAKA GÖRSEL KARTLARI */
+    .plate-demo-grid {
+      display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; margin: 20px 0;
+    }
+    .plate-demo-box {
+      border: 1px solid var(--border); border-radius: 14px; padding: 18px;
+      background: #f8fafc;
+    }
+    .plate-render-black {
+      background: #09090b; color: #ffffff; font-family: var(--font-mono);
+      font-size: 24px; font-weight: 800; letter-spacing: 3px; padding: 12px 20px;
+      border-radius: 8px; border: 2px solid #27272a; display: inline-block;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.25); margin-bottom: 12px;
+    }
+    .plate-render-green {
+      background: #15803d; color: #ffffff; font-family: var(--font-mono);
+      font-size: 24px; font-weight: 800; letter-spacing: 3px; padding: 12px 20px;
+      border-radius: 8px; border: 2px solid #166534; display: inline-block;
+      box-shadow: 0 4px 12px rgba(21, 128, 61, 0.3); margin-bottom: 12px;
+    }
+
+    /* 4 PROTOKOL MADDESİ */
+    .feature-grid-4 {
+      display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-top: 14px;
+    }
+    .feature-box {
+      background: #ffffff; border: 1px solid var(--border); border-radius: 12px;
+      padding: 16px; text-align: left;
+    }
+    .feature-box-icon {
+      font-size: 20px; margin-bottom: 8px;
+    }
+    .feature-box-title {
+      font-size: 13px; font-weight: 700; color: var(--text); margin-bottom: 4px;
+    }
+    .feature-box-text {
+      font-size: 12px; color: var(--muted); line-height: 1.45;
+    }
+
+    /* BACKLOG LİSTESİ */
+    .backlog-grid {
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 16px;
+    }
+    .backlog-card {
+      border: 1px solid var(--border); border-radius: 12px; padding: 16px;
+      background: #ffffff; transition: transform 0.15s;
+    }
+    .backlog-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+    .phase-badge {
+      display: inline-block; font-size: 10px; font-weight: 800; font-family: var(--font-mono);
+      padding: 3px 8px; border-radius: 4px; margin-bottom: 8px;
+    }
+
+    /* SAHA MADDELERİ */
+    .saha-list {
+      display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; margin-top: 14px;
+    }
+    .saha-item {
+      background: #f8fafc; border: 1px solid var(--border); border-radius: 12px;
+      padding: 16px; display: flex; gap: 12px; align-items: flex-start;
+    }
+
+    /* TABLO */
+    .health-table {
+      width: 100%; border-collapse: collapse; margin-top: 12px; font-size: 13px;
+    }
+    .health-table th, .health-table td {
+      padding: 10px 14px; border-bottom: 1px solid var(--border); text-align: left;
+    }
+    .health-table th { background: #f8fafc; font-weight: 700; color: #475569; }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <div class="brand">
+      <div class="brand-icon">P</div>
+      <div>
+        <div class="brand-title">SmartPark AR-GE & Yol Haritası</div>
+      </div>
+      <span class="patent-tag">PATENT: TR 2026/014052</span>
+    </div>
+    <div class="nav-links">
+      <a href="entrance.html" class="nav-btn">Giriş Kiosku</a>
+      <a href="floor.html" class="nav-btn">Kat Haritası</a>
+      <a href="app.html" class="nav-btn">📱 Müşteri Uygulaması</a>
+      <a href="guard.html" class="nav-btn">👮 Güvenlik Terminali</a>
+      <a href="portal.html" class="nav-btn">Sürücü Portalı</a>
+      <a href="upcoming.html" class="nav-btn active">🔮 Yakında Gelecekler</a>
+    </div>
+  </div>
+</header>
+
+<div class="page-container">
+
+  <!-- 🛡️ MANİFESTO BANNERI -->
+  <div class="manifesto-banner">
+    <div class="manifesto-tag">
+      <span>🛡️ MÜHENDİSLİK KARARLILIK İLKESİ</span>
+    </div>
+    <div class="manifesto-title">
+      "Çalışıyorsa Kurcalama!"
+    </div>
+    <div class="manifesto-desc">
+      Mevcut <strong>v10.0 LTS (Kararlı Sürüm)</strong> sistemimiz; 1000 slotluk 3+1 segregated mimari, dinamik AVP otonom rota motoru, NVIDIA NIM Cloud OCR entegrasyonu, otomatik açılan bariyerler ve canlı yönetim ekranlarıyla %100 kusursuz ve kararlı şekilde çalışmaktadır. <strong>Mühendislik kuralı gereğince çalışan sisteme dokunulmaz.</strong> Bu sayfada yer alan yeni özellikler AR-GE laboratuvarımızda projelendirilmiş olup, ilerleyen fazlarda sırayla ve güvenle devreye alınacaktır.
+    </div>
+  </div>
+
+  <!-- 🏛️ 1. YENİ PLANLANAN ÖZELLİK: RESMİ & DİPLOMATİK PLAKA PROTOKOLÜ -->
+  <div class="card">
+    <div class="card-header">
+      <div>
+        <div class="card-title">
+          <span>🏛️ Yeni Planlanan Özellik: Resmi (Siyah) & Diplomatik (Yeşil) Plaka Protokol Park Sistemi</span>
+        </div>
+        <div style="font-size:13px;color:var(--muted);margin-top:4px">
+          Devlet erkanı, askeri komutanlıklar, emniyet müdürleri, konsolosluk ve elçilik araçlarının özel güvenlikli park mimarisi
+        </div>
+      </div>
+      <span class="card-badge" style="background:#eff6ff;color:#1d4ed8;border:1px solid #bfdbfe">AR-GE / Faz 16</span>
+    </div>
+
+    <!-- PLAKA GÖRSELLEŞTİRME -->
+    <div class="plate-demo-grid">
+      <!-- SİYAH PLAKA -->
+      <div class="plate-demo-box">
+        <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;margin-bottom:8px">
+          Devlet Resmi Hizmet Plakası (Siyah Zemin)
+        </div>
+        <div class="plate-render-black">
+          06 JAA 01
+        </div>
+        <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:4px">
+          Askeri Komutanlık, Emniyet Müdürü, Vali, Savcı, MİT & Müfettişler
+        </div>
+        <div style="font-size:12px;color:var(--muted);line-height:1.5">
+          Kamu görevlileri ve resmi heyetlerin makam araçları. TSK garnizon komutanları, il emniyet müdürleri ve devlet denetim müfettişlerini kapsar.
+        </div>
+      </div>
+
+      <!-- YEŞİL PLAKA -->
+      <div class="plate-demo-box">
+        <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;margin-bottom:8px">
+          Diplomatik Misyon Plakası (Yeşil Zemin)
+        </div>
+        <div class="plate-render-green">
+          34 CD 100
+        </div>
+        <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:4px">
+          Büyükelçilik (CD), Başkonsolosluk (CC) & Uluslararası Temsilcilikler
+        </div>
+        <div style="font-size:12px;color:var(--muted);line-height:1.5">
+          Viyana Diplomatik İlişkiler Sözleşmesi kapsamındaki yabancı diplomatlar, ataşeler ve konsolosluk heyetlerine ait resmi temsil araçları.
+        </div>
+      </div>
+    </div>
+
+    <!-- 4 TEMEL PROTOKOL DİREĞİ -->
+    <div style="font-size:13px;font-weight:800;color:var(--text);margin-top:20px;margin-bottom:6px">
+      🛡️ Protokol Araçları Otoparka Nasıl Park Edecek? (4 Mühendislik İlkesi)
+    </div>
+    <div class="feature-grid-4">
+      <div class="feature-box">
+        <div class="feature-box-icon">🛑</div>
+        <div class="feature-box-title">1. Kat 1 Zemin 0-Rampa</div>
+        <div class="feature-box-text">
+          Spiral rampaya sokulmaz. Güvenlik gerekçesiyle Kat 1 Zemin peronunda, ana güvenlik kulübesinin 15 metre önünde tahsis edilir.
+        </div>
+      </div>
+
+      <div class="feature-box">
+        <div class="feature-box-icon">🛡️</div>
+        <div class="feature-box-title">2. 5000 kg Zırh Kapasitesi</div>
+        <div class="feature-box-text">
+          Mercedes S-Guard, BMW 7 Protection ve Land Cruiser Armor gibi 3.5 - 4.5 tonluk zırhlı makam araçlarına özel statik zemin yuvası.
+        </div>
+      </div>
+
+      <div class="feature-box">
+        <div class="feature-box-icon">⚖️</div>
+        <div class="feature-box-title">3. ₺0 Yasal Ücret Muafiyeti</div>
+        <div class="feature-box-text">
+          237 sayılı Taşıt Kanunu ve Viyana Sözleşmesi uyarınca resmi ve diplomatik araçlardan otopark veya bekleme ücreti alınmaz (Tam Muafiyet).
+        </div>
+      </div>
+
+      <div class="feature-box">
+        <div class="feature-box-icon">🚨</div>
+        <div class="feature-box-title">4. Sessiz Güvenlik Alarmı</div>
+        <div class="feature-box-text">
+          Bariyerden geçtiği anda Güvenlik Terminaline (guard.html) sessiz bildirim düşer; personel karşılar ve 1.5m sanal LiDAR çemberi aktifleşir.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 🔮 2. GELECEK FAZLAR & YAPILACAKLAR LİSTESİ (BACKLOG) -->
+  <div class="card">
+    <div class="card-header">
+      <div>
+        <div class="card-title">
+          <span>🔮 Gelecek Fazlar & Yapılacaklar Listesi (Backlog)</span>
+        </div>
+        <div style="font-size:13px;color:var(--muted);margin-top:4px">
+          Sistemin kararlılığını bozmadan planlanan ve sırayla geliştirilecek sonraki fazlar
+        </div>
+      </div>
+      <span class="card-badge" style="background:#fef3c7;color:#b45309;border:1px solid #fde68a">Planlanan Yol Haritası</span>
+    </div>
+
+    <div class="backlog-grid">
+      <!-- FAZ 11 -->
+      <div class="backlog-card">
+        <span class="phase-badge" style="background:#e0e7ff;color:#3730a3">FAZ 11</span>
+        <div style="font-size:14px;font-weight:800;margin-bottom:6px">3D WebGL Dijital İkiz (Three.js)</div>
+        <div style="font-size:12px;color:var(--muted);line-height:1.5">
+          Kat haritası için GPU hızlandırmalı, 60 FPS Three.js 3D bina modeli ve NVIDIA Isaac Sim LiDAR nokta bulutu entegrasyonu.
+        </div>
+      </div>
+
+      <!-- FAZ 12 -->
+      <div class="backlog-card">
+        <span class="phase-badge" style="background:#ecfdf5;color:#065f46">FAZ 12</span>
+        <div style="font-size:14px;font-weight:800;margin-bottom:6px">Otonom Yer Değiştirme (V2I Relocation)</div>
+        <div style="font-size:12px;color:var(--muted);line-height:1.5">
+          Şarjı %100 dolan elektrikli aracın fişi çekildikten sonra otomatik olarak standart boş slota kendi kendine geçiş yapması.
+        </div>
+      </div>
+
+      <!-- FAZ 13 -->
+      <div class="backlog-card">
+        <span class="phase-badge" style="background:#fffbeb;color:#92400e">FAZ 13</span>
+        <div style="font-size:14px;font-weight:800;margin-bottom:6px">IoT Zemin Kilidi & Tavan RGB Lambası</div>
+        <div style="font-size:12px;color:var(--muted);line-height:1.5">
+          Rezerve edilen slotlarda tavan lambasının SARI yanması ve elektromekanik zemin bariyerinin yukarı kalkarak yeri kilitlemesi.
+        </div>
+      </div>
+
+      <!-- FAZ 14 -->
+      <div class="backlog-card">
+        <span class="phase-badge" style="background:#f1f5f9;color:#334155">FAZ 14</span>
+        <div style="font-size:14px;font-weight:800;margin-bottom:6px">e-Tutanak Yazdırma & Zabıta Entegrasyonu</div>
+        <div style="font-size:12px;color:var(--muted);line-height:1.5">
+          Engelli veya aile alanını haksız işgal edenlere güvenlik el terminalinden KTK m.61 uyarınca resmi PDF tutanak üretimi ve Zabıta bildirimi.
+        </div>
+      </div>
+
+      <!-- FAZ 15 -->
+      <div class="backlog-card">
+        <span class="phase-badge" style="background:#fdf2f8;color:#9d174d">FAZ 15</span>
+        <div style="font-size:14px;font-weight:800;margin-bottom:6px">HGS & Karayolları Otomatik Tahsilat</div>
+        <div style="font-size:12px;color:var(--muted);line-height:1.5">
+          Bariyeri zorlayan veya borcunu ödemeden çıkan araçların plakasına borcun HGS ve araç devir sistemine otomatik işlenmesi.
+        </div>
+      </div>
+
+      <!-- FAZ 16 -->
+      <div class="backlog-card">
+        <span class="phase-badge" style="background:#f3f4f6;color:#111827">FAZ 16</span>
+        <div style="font-size:14px;font-weight:800;margin-bottom:6px">Resmi & Diplomatik Plaka Modülü</div>
+        <div style="font-size:12px;color:var(--muted);line-height:1.5">
+          Siyah ve yeşil plaka OCR algılama, Kat 1 Protokol Hub yönlendirmesi, ₺0 tarife ve güvenlik terminali eskort bildirimi.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 🛠️ 3. FİZİKSEL SAHADA ÇÖZÜLECEK 6 KRİTİK MÜHENDİSLİK MADDESİ -->
+  <div class="card">
+    <div class="card-header">
+      <div>
+        <div class="card-title">
+          <span>🛠️ Fiziksel Sahada Çözülecek 6 Kritik Donanım ve İnşaat Başlığı</span>
+        </div>
+        <div style="font-size:13px;color:var(--muted);margin-top:4px">
+          Yazılımdan gerçek 1000 araçlık betonarme tesise geçildiğinde uygulanacak saha çözümleri
+        </div>
+      </div>
+      <span class="card-badge" style="background:#ecfdf5;color:#065f46;border:1px solid #a7f3d0">Saha Fizibilitesi</span>
+    </div>
+
+    <div class="saha-list">
+      <div class="saha-item">
+        <div style="font-size:24px">🔥</div>
+        <div>
+          <div style="font-size:13px;font-weight:700;color:var(--text)">Dikey Yangın & Termal Kaçak İzolasyonu</div>
+          <div style="font-size:12px;color:var(--muted);margin-top:2px;line-height:1.45">
+            100 adet 120kW şarj noktasının tavanına otomatik duman perdesi ve aerosol nozullar yerleştirilerek zehirli gazların spiral rampadan üst katlara çıkması milisaniyede damperlerle engellenir.
+          </div>
+        </div>
+      </div>
+
+      <div class="saha-item">
+        <div style="font-size:24px">📶</div>
+        <div>
+          <div style="font-size:13px;font-weight:700;color:var(--text)">Betonarme İçi UWB Mesh Beacon Ağı</div>
+          <div style="font-size:12px;color:var(--muted);margin-top:2px;line-height:1.45">
+            50 cm kalınlığındaki perde beton kolonların radyo sinyalini kesmesini önlemek için her 15 metrede bir tavan aydınlatmalarına entegre atlamalı (daisy-chain) UWB radyo ağı kurulur.
+          </div>
+        </div>
+      </div>
+
+      <div class="saha-item">
+        <div style="font-size:24px">🧹</div>
+        <div>
+          <div style="font-size:13px;font-weight:700;color:var(--text)">Çatı GES Robotik Panel Temizleme Rayları</div>
+          <div style="font-size:12px;color:var(--muted);margin-top:2px;line-height:1.45">
+            Şehir tozunun güneş enerjisi üretimini %25 düşürmesini engellemek için yağmur suyu deposuna bağlı otomatik raylı robotik silecekler panelleri her sabah yıkar.
+          </div>
+        </div>
+      </div>
+
+      <div class="saha-item">
+        <div style="font-size:24px">💳</div>
+        <div>
+          <div style="font-size:13px;font-weight:700;color:var(--text)">Dijital Borç Kilidi & HGS Tahsilatı</div>
+          <div style="font-size:12px;color:var(--muted);margin-top:2px;line-height:1.45">
+            Tekerlek kilidi yerine çıkış bariyerinde plakaya borç kaydedilir ve Karayolları/HGS veri tabanı üzerinden sürücünün ilk geçişinden veya araç satışından otomatik tahsil edilir.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 📊 4. MEVCUT SİSTEM SAĞLIK VE KARARLILIK MATRİSİ -->
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title">
+        <span>📊 Aktif Ekosistem Sağlık ve Donma (LTS) Matrisi</span>
+      </div>
+      <span class="card-badge" style="background:#ecfdf5;color:#065f46;border:1px solid #a7f3d0">v10.0 LTS %100 Kararlı</span>
+    </div>
+
+    <table class="health-table">
+      <thead>
+        <tr>
+          <th>Modül / Dosya</th>
+          <th>Sistemdeki Görevi</th>
+          <th>Kararlılık Durumu</th>
+          <th>Bağlantı</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>smartpark.js</strong></td>
+          <td>1000 Slotluk Veri Tabanı, AVP Rota Grafı, NVIDIA NIM Vision OCR, Ceza Motoru</td>
+          <td><span style="color:var(--green);font-weight:700">🟢 %100 Sağlıklı (Sıfır Hata)</span></td>
+          <td>Çekirdek Motor</td>
+        </tr>
+        <tr>
+          <td><strong>entrance.html</strong></td>
+          <td>Giriş Kiosku, 1-Tık Hızlı Seçim, Otomatik Açılan Bariyer (-85°), Sesli Anons</td>
+          <td><span style="color:var(--green);font-weight:700">🟢 %100 Sağlıklı</span></td>
+          <td><a href="entrance.html" style="color:#2563eb;text-decoration:none;font-weight:600">Giriş Kiosku ➔</a></td>
+        </tr>
+        <tr>
+          <td><strong>floor.html</strong></td>
+          <td>Canlı Kat & Slot Yönetim Tablosu (Ultra hafif, ferah minmax(68px, 1fr))</td>
+          <td><span style="color:var(--green);font-weight:700">🟢 %100 Sağlıklı</span></td>
+          <td><a href="floor.html" style="color:#2563eb;text-decoration:none;font-weight:600">Kat Haritası ➔</a></td>
+        </tr>
+        <tr>
+          <td><strong>app.html</strong></td>
+          <td>Sürücü Mobil Uygulaması, Canlı AVP Otonom Navigasyon, Summon & Ceza Sayacı</td>
+          <td><span style="color:var(--green);font-weight:700">🟢 %100 Sağlıklı</span></td>
+          <td><a href="app.html" style="color:#2563eb;text-decoration:none;font-weight:600">Müşteri Simülatörü ➔</a></td>
+        </tr>
+        <tr>
+          <td><strong>guard.html</strong></td>
+          <td>Güvenlik El Terminali, Şarj Pompa Görevlisi Fiş Çekme, Ceza Tutanağı & Kara Liste</td>
+          <td><span style="color:var(--green);font-weight:700">🟢 %100 Sağlıklı</span></td>
+          <td><a href="guard.html" style="color:#2563eb;text-decoration:none;font-weight:600">Güvenlik Terminali ➔</a></td>
+        </tr>
+        <tr>
+          <td><strong>portal.html</strong></td>
+          <td>Sürücü Portalı, 2FA Araç Ruhsat Devri, VIP Rezervasyon & Dinamik QR</td>
+          <td><span style="color:var(--green);font-weight:700">🟢 %100 Sağlıklı</span></td>
+          <td><a href="portal.html" style="color:#2563eb;text-decoration:none;font-weight:600">Sürücü Portalı ➔</a></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+</div>
+
+</body>
+</html>

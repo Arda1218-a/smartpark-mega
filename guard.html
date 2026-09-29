@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SmartPark — Güvenlik & Şarj Vale El Terminali</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet" />
+  <script src="smartpark.js"></script>
+  <style>
+    :root {
+      --bg: #f1f5f9;
+      --border: #e2e8f0;
+      --text: #0f172a;
+      --muted: #64748b;
+      --dark-btn: #18181b;
+      --green: #059669;
+      --green-light: #ecfdf5;
+      --green-border: #a7f3d0;
+      --amber: #d97706;
+      --amber-light: #fffbeb;
+      --rose: #e11d48;
+      --rose-light: #fff1f2;
+      --rose-border: #fecdd3;
+      --font-mono: 'JetBrains Mono', monospace;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif;
+      min-height: 100vh; display: flex; flex-direction: column; align-items: center; padding: 24px 16px;
+    }
+
+    .top-bar {
+      max-width: 900px; width: 100%; display: flex; justify-content: space-between;
+      align-items: center; margin-bottom: 20px; background: #ffffff; padding: 12px 20px;
+      border-radius: 12px; border: 1px solid var(--border);
+    }
+    .nav-btn {
+      padding: 6px 12px; border-radius: 6px; font-size: 12px; font-weight: 600; text-decoration: none;
+      border: 1px solid var(--border); background: #ffffff; color: var(--text);
+    }
+
+    /* EL TERMİNALİ GÖVDESİ */
+    .terminal-container {
+      width: 440px; background: #ffffff; border-radius: 24px; border: 1px solid var(--border);
+      padding: 24px; box-shadow: 0 20px 50px rgba(0,0,0,0.08);
+    }
+
+    .card-title {
+      font-size: 13px; font-weight: 800; text-transform: uppercase; color: var(--muted);
+      margin-bottom: 14px; display: flex; justify-content: space-between; align-items: center;
+    }
+
+    .section-box {
+      background: #f8fafc; border: 1px solid var(--border); border-radius: 14px;
+      padding: 16px; margin-bottom: 16px;
+    }
+
+    input, select {
+      width: 100%; padding: 10px 12px; background: #ffffff; border: 1px solid var(--border);
+      border-radius: 8px; font-size: 13px; margin-bottom: 8px;
+    }
+
+    .btn {
+      width: 100%; padding: 11px; border: none; border-radius: 8px; font-size: 12px; font-weight: 700;
+      cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px;
+    }
+    .btn-dark { background: var(--dark-btn); color: #ffffff; }
+    .btn-green { background: var(--green); color: #ffffff; }
+    .btn-rose { background: var(--rose); color: #ffffff; }
+
+    .toast {
+      position: fixed; bottom: 24px; right: 24px; padding: 12px 20px; border-radius: 8px;
+      font-size: 13px; font-weight: 600; z-index: 99999;
+      background: var(--dark-btn); color: #ffffff;
+      transform: translateY(80px); opacity: 0; transition: all 0.25s;
+    }
+    .toast.show { transform: translateY(0); opacity: 1; }
+  </style>
+</head>
+<body>
+
+<div class="top-bar">
+  <div>
+    <strong style="font-size:14px">👮 Güvenlik & Şarj Vale El Terminali (SP-GUARD Terminal)</strong>
+    <div style="font-size:11px;color:var(--muted)">Güvenlik görevlisi ve EV şarj personeli ortak operasyon ekranı</div>
+  </div>
+  <div style="display:flex;gap:8px">
+    <a href="app.html" class="nav-btn">📱 Müşteri Uygulaması</a>
+    <a href="floor.html" class="nav-btn">🗺️ Kat Haritası</a>
+    <a href="entrance.html" class="nav-btn">🚗 Giriş Kiosku</a>
+    <a href="upcoming.html" class="nav-btn">🔮 Yakında Gelecekler</a>
+  </div>
+</div>
+
+<div class="terminal-container">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;border-bottom:1px solid var(--border);padding-bottom:12px">
+    <div>
+      <div style="font-size:12px;color:var(--muted);font-weight:600">GÖREVLİ TERMİNALİ</div>
+      <div style="font-size:16px;font-weight:800">Devriye & Şarj İstasyonu</div>
+    </div>
+    <span style="font-size:10px;font-weight:700;color:var(--green);background:var(--green-light);padding:4px 8px;border-radius:6px">
+      ● CANLI BAĞLANTI
+    </span>
+  </div>
+
+  <!-- 1. PLAKA DENETİMİ & CEZA MODÜLÜ -->
+  <div class="section-box">
+    <div class="card-title">
+      <span>🔍 1. Devriye Plaka & Slot Denetimi</span>
+    </div>
+    <input id="scanPlate" placeholder="Denetlenecek Plaka (Örn: 34 VIP 1000)" style="text-transform:uppercase" />
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
+      <select id="scanFloor">
+        <option value="1">Kat 1 (Zemin)</option>
+        <option value="2">Kat 2</option>
+        <option value="3">Kat 3</option>
+        <option value="4">Kat 4</option>
+        <option value="5">Kat 5</option>
+      </select>
+      <input id="scanSlot" placeholder="Slot (Örn: C-01)" style="text-transform:uppercase" />
+    </div>
+    <button class="btn btn-dark" onclick="doPlateAudit()">
+      🔍 Plakayı & Yeri Doğrula
+    </button>
+    <div id="auditResultBox" style="display:none;margin-top:10px;padding:10px;border-radius:8px;font-size:12px"></div>
+  </div>
+
+  <!-- 2. EV ŞARJ VALE İSTASYONU (POMPA GÖREVLİSİ SOKET ÇIKARMA) -->
+  <div class="section-box">
+    <div class="card-title">
+      <span>⚡ 2. Şarj Görevlisi Vale Paneli</span>
+      <span style="font-size:10px;color:var(--green)">100 İstasyon</span>
+    </div>
+    <div style="font-size:11px;color:var(--muted);margin-bottom:10px">
+      Şarjı tamamlanan araçların fişini çekerek soketi boşa çıkarın:
+    </div>
+    <div id="valetListContainer" style="display:flex;flex-direction:column;gap:8px"></div>
+  </div>
+
+  <!-- 3. HUKUKİ CEZA & İDARİ TUTANAK DÜZENLEME -->
+  <div class="section-box">
+    <div class="card-title">
+      <span>⚖️ 3. Hukuki Ceza & İdari Tutanak Düzenle</span>
+      <span style="font-size:10px;color:var(--rose)">TBK & KTK</span>
+    </div>
+    <div style="font-size:11px;color:var(--muted);margin-bottom:8px">
+      Haksız işgal, usulsüz engelli/kadın parkı ve ICEing cezası düzenleyin:
+    </div>
+    <input id="citePlate" placeholder="Ceza Yazılacak Plaka (Örn: 34 VIP 1000)" style="text-transform:uppercase" />
+    <select id="citeType">
+      <option value="DISABLED_SLOT_VIOLATION">♿ Engelli Alanı Haksız İşgali (₺2.500 Ceza - KTK m. 61/o)</option>
+      <option value="ICEING_CHARGER_BLOCK">⚡ Yeşil Enerji / Şarj İstasyonu Engeli (₺1.000 Ceza)</option>
+      <option value="WOMAN_FAMILY_VIOLATION">🌸 Kadın & Aile Alanı Usulsüz Parkı (₺750 Ceza)</option>
+      <option value="RAMP_OVERWEIGHT_RISK">🛑 Statik Rampa Aşırı Ağırlık İhlali (₺5.000 Ceza - TCK 179)</option>
+      <option value="OVERSTAY_ABUSE">⏱️ Ödeme Sonrası 5 Dk İşgal / Çıkmama (₺500 Ceza)</option>
+    </select>
+    <input id="citeNotes" placeholder="Tutanak Notu / Kamera Fotoğraf Referansı" />
+    <button class="btn btn-rose" onclick="doIssueCitation()">
+      ⚖️ İdari Cezayı Kes & Plakaya İşle
+    </button>
+    <div id="citeResultBox" style="display:none;margin-top:8px;padding:8px;border-radius:6px;font-size:11px"></div>
+  </div>
+
+  <!-- 4. KARA LİSTE TABLOSU (3 KEZ İHLAL EDENLER) -->
+  <div class="section-box" style="margin-bottom:0">
+    <div class="card-title">
+      <span>🛑 4. Kara Liste (Men Edilen Araçlar)</span>
+      <span style="color:var(--rose);font-size:10px" id="blackCount">0 Araç</span>
+    </div>
+    <div id="blackListContainer" style="font-size:11px;color:var(--muted);max-height:120px;overflow-y:auto"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  function renderTerminal() {
+    const db = SP.getDB();
+    if (!db) return;
+
+    // Şarj Vale Görevleri
+    const tasks = db.valetTasks || [];
+    if (tasks.length === 0) {
+      document.getElementById('valetListContainer').innerHTML = `
+        <div style="font-size:11px;color:var(--muted);text-align:center;padding:8px">Şu an aktif şarj olan araç yok.</div>
+      `;
+    } else {
+      document.getElementById('valetListContainer').innerHTML = tasks.map(t => `
+        <div style="background:#ffffff;border:1px solid var(--border);border-radius:8px;padding:10px;display:flex;justify-content:space-between;align-items:center">
+          <div>
+            <div style="font-weight:700;font-size:12px">${t.plate} (${t.model})</div>
+            <div style="font-size:10px;color:var(--muted)">Yer: ${t.slot} | Durum: ${t.status === 'CHARGING' ? '⚡ Şarjda' : '✅ Fiş Çekildi'}</div>
+          </div>
+          ${t.status === 'CHARGING' ? `
+            <button onclick="unplugByValet('${t.plate}')" style="padding:6px 10px;border:none;border-radius:6px;background:var(--green);color:#ffffff;font-size:10px;font-weight:700;cursor:pointer">
+              🔌 Fişi Çek
+            </button>
+          ` : '<span style="font-size:10px;color:var(--muted)">Tamamlandı</span>'}
+        </div>
+      `).join('');
+    }
+
+    // Kara Liste
+    const bl = db.blacklist || [];
+    document.getElementById('blackCount').textContent = `${bl.length} Araç`;
+    document.getElementById('blackListContainer').innerHTML = bl.map(b => `
+      <div style="padding:6px 8px;background:var(--rose-light);border:1px solid var(--rose-border);border-radius:6px;margin-bottom:4px;color:var(--rose)">
+        <strong>${b.plate}</strong> — ${b.reason}
+      </div>
+    `).join('');
+  }
+
+  function doPlateAudit() {
+    const plate = document.getElementById('scanPlate').value.trim();
+    const floorId = parseInt(document.getElementById('scanFloor').value);
+    const slotCode = document.getElementById('scanSlot').value.trim().toUpperCase();
+
+    const r = SP.guardInspectPlate(plate, floorId, slotCode, '');
+    const box = document.getElementById('auditResultBox');
+    box.style.display = 'block';
+
+    if (r.matched) {
+      box.style.background = 'var(--green-light)';
+      box.style.border = '1px solid var(--green-border)';
+      box.style.color = 'var(--green)';
+      box.innerHTML = `<strong>${r.title}</strong><br>${r.details}`;
+    } else {
+      box.style.background = 'var(--rose-light)';
+      box.style.border = '1px solid var(--rose-border)';
+      box.style.color = 'var(--rose)';
+      box.innerHTML = `<strong>${r.title}</strong><br>${r.details}`;
+    }
+  }
+
+  function unplugByValet(plate) {
+    const r = SP.valetUnplugVehicle(plate);
+    showToast(r.message || '🔌 Fiş söküldü.');
+    renderTerminal();
+  }
+
+  function doIssueCitation() {
+    const plate = document.getElementById('citePlate').value.trim();
+    const type = document.getElementById('citeType').value;
+    const notes = document.getElementById('citeNotes').value.trim();
+
+    if (!plate) {
+      showToast('Lütfen bir plaka girin.');
+      return;
+    }
+
+    const r = SP.guardIssueCitation(plate, type, notes);
+    const box = document.getElementById('citeResultBox');
+    box.style.display = 'block';
+
+    if (r.error) {
+      box.style.background = 'var(--rose-light)';
+      box.style.border = '1px solid var(--rose-border)';
+      box.style.color = 'var(--rose)';
+      box.innerHTML = `<strong>HATA:</strong> ${r.error}`;
+    } else {
+      box.style.background = 'var(--green-light)';
+      box.style.border = '1px solid var(--green-border)';
+      box.style.color = 'var(--green)';
+      box.innerHTML = `<strong>${r.message}</strong><br>İhlal Sayısı: <strong>${r.strikes}/3</strong> ${r.isBlacklisted ? '<br><span style="color:var(--rose);font-weight:700">🚨 DİKKAT: Araç 3. İhlal Sebebiyle Otomatik Kara Listeye Alındı!</span>' : ''}`;
+      showToast(r.message);
+      renderTerminal();
+    }
+  }
+
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.className = 'toast show';
+    setTimeout(() => t.classList.remove('show'), 3500);
+  }
+
+  SP.onUpdate(() => renderTerminal());
+  renderTerminal();
+</script>
+</body>
+</html>

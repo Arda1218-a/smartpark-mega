@@ -1,0 +1,939 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SmartPark — Giriş Terminali (NVIDIA Cloud Destekli)</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet" />
+  <script src="smartpark.js"></script>
+  <style>
+    :root {
+      --bg: #f8fafc;
+      --card: #ffffff;
+      --border: #e2e8f0;
+      --text: #0f172a;
+      --muted: #64748b;
+      --dark-btn: #18181b;
+      --dark-btn-hover: #27272a;
+      --green: #059669;
+      --green-light: #ecfdf5;
+      --green-border: #a7f3d0;
+      --amber: #d97706;
+      --amber-light: #fffbeb;
+      --amber-border: #fde68a;
+      --rose: #e11d48;
+      --nvidia: #76b900;
+      --font-mono: 'JetBrains Mono', monospace;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif;
+      min-height: 100vh;
+    }
+
+    header {
+      background: #ffffff; border-bottom: 1px solid var(--border);
+      padding: 14px 0;
+    }
+    .header-inner {
+      max-width: 1080px; margin: 0 auto; padding: 0 24px;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .brand { display: flex; align-items: center; gap: 10px; }
+    .brand-icon {
+      width: 34px; height: 34px; border-radius: 8px;
+      background: var(--dark-btn); color: #fff; display: flex; align-items: center;
+      justify-content: center; font-size: 15px; font-weight: 800;
+    }
+    .brand-title { font-size: 16px; font-weight: 800; color: var(--text); }
+    .patent-tag {
+      font-size: 11px; font-family: var(--font-mono); color: #475569;
+      background: #f1f5f9; padding: 4px 8px; border-radius: 6px; border: 1px solid #cbd5e1;
+    }
+    .nav-links { display: flex; gap: 8px; align-items: center; }
+    .nav-btn {
+      padding: 7px 14px; border-radius: 8px; font-size: 12px; font-weight: 600; text-decoration: none;
+      border: 1px solid var(--border); background: #ffffff; color: var(--text);
+      transition: all 0.15s;
+    }
+    .nav-btn:hover { background: #f1f5f9; }
+    .nav-btn.active { background: var(--dark-btn); color: #ffffff; border-color: var(--dark-btn); }
+
+    .page-container {
+      max-width: 1080px; margin: 28px auto; padding: 0 24px;
+    }
+
+    /* 🟢 NVIDIA BULUT BAĞLANTI BANNER'I */
+    .nvidia-banner {
+      background: #18181b; color: #ffffff; border-radius: 14px; padding: 14px 20px;
+      margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    }
+
+    /* ☀️ GÜNEŞ ENERJİSİ DASHBOARD'U */
+    .solar-dashboard {
+      background: #ffffff; border: 1px solid var(--border); border-radius: 16px;
+      padding: 20px 24px; margin-bottom: 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+    }
+    .solar-grid {
+      display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-top: 14px;
+    }
+    .solar-stat-box {
+      background: #f8fafc; border: 1px solid var(--border); border-radius: 12px;
+      padding: 14px; text-align: left;
+    }
+    .solar-val {
+      font-size: 20px; font-weight: 800; margin-top: 4px;
+    }
+
+    .main-grid {
+      display: grid; grid-template-columns: 460px 1fr; gap: 24px;
+    }
+    .card {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 16px; padding: 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+    }
+    .card-title {
+      font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;
+      color: var(--muted); margin-bottom: 18px; display: flex; justify-content: space-between; align-items: center;
+    }
+
+    /* 📷 NVIDIA VISION AI VİDEO */
+    .vision-ai-box {
+      background: #09090b; border-radius: 12px; height: 160px; position: relative;
+      overflow: hidden; display: flex; align-items: center; justify-content: center;
+      margin-bottom: 14px; border: 1px solid #27272a;
+    }
+    .vision-overlay-box {
+      position: absolute; border: 2px solid #22c55e; border-radius: 6px;
+      width: 75%; height: 75%; display: flex; flex-direction: column; justify-content: space-between;
+      padding: 6px; background: rgba(34, 197, 94, 0.05);
+    }
+
+    .form-group { margin-bottom: 14px; }
+    label { display: block; font-size: 12px; font-weight: 600; color: #334155; margin-bottom: 6px; }
+
+    select, input {
+      width: 100%; padding: 10px 12px; background: #ffffff; border: 1px solid var(--border);
+      border-radius: 8px; color: var(--text); font-size: 13px; font-weight: 500; outline: none;
+    }
+    select:focus, input:focus { border-color: #0f172a; }
+
+    .profile-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 16px; }
+    .profile-pill {
+      border: 1px solid var(--border); border-radius: 8px; padding: 9px 12px;
+      cursor: pointer; font-size: 12px; font-weight: 600; background: #f8fafc; color: var(--muted);
+      display: flex; align-items: center; gap: 6px; transition: all 0.15s;
+    }
+    .profile-pill input { display: none; }
+    .profile-pill.active {
+      background: #059669 !important; color: #ffffff !important; border-color: #059669 !important;
+      font-weight: 800 !important; box-shadow: 0 0 10px rgba(5, 150, 105, 0.4) !important;
+    }
+
+    .quick-car-btn {
+      padding: 6px 10px; border-radius: 6px; font-size: 11px; font-weight: 700;
+      border: 1px solid var(--border); background: #f8fafc; color: var(--text);
+      cursor: pointer; transition: all 0.15s;
+    }
+    .quick-car-btn:hover { background: #e2e8f0; }
+    .quick-car-btn.active {
+      background: #059669; color: #ffffff; border-color: #059669;
+    }
+
+    .btn {
+      width: 100%; padding: 12px; border: none; border-radius: 8px; font-size: 13px; font-weight: 700;
+      cursor: pointer; transition: all 0.15s; display: flex; align-items: center; justify-content: center; gap: 8px;
+    }
+    .btn-dark { background: var(--dark-btn); color: #ffffff; margin-bottom: 8px; }
+    .btn-dark:hover { background: var(--dark-btn-hover); }
+    .btn-outline { background: #ffffff; border: 1px solid var(--border); color: var(--text); }
+    .btn-outline:hover { background: #f1f5f9; }
+
+    .floor-row {
+      background: #f8fafc; border: 1px solid var(--border); border-radius: 10px;
+      padding: 12px 14px; margin-bottom: 8px;
+    }
+    .progress-bar-bg {
+      height: 6px; background: #e2e8f0; border-radius: 99px; overflow: hidden; margin-top: 8px;
+    }
+    .progress-bar-fill { height: 100%; border-radius: 99px; transition: width 0.3s; }
+
+    /* KİOSK CANLI KAT HARİTASI & BARİYER */
+    .kiosk-floor-tabs { display: flex; gap: 6px; margin-bottom: 10px; overflow-x: auto; }
+    .k-fl-tab {
+      padding: 6px 12px; border-radius: 6px; font-size: 11px; font-weight: 700;
+      cursor: pointer; border: 1px solid var(--border); background: #f8fafc; color: var(--muted);
+      white-space: nowrap; transition: all 0.15s;
+    }
+    .k-fl-tab.active { background: var(--dark-btn); color: #ffffff; border-color: var(--dark-btn); }
+
+    .k-row-filter {
+      padding: 4px 9px; border-radius: 5px; font-size: 10px; font-weight: 700;
+      cursor: pointer; border: 1px solid var(--border); background: #ffffff; color: var(--muted);
+      white-space: nowrap; transition: all 0.15s;
+    }
+    .k-row-filter.active { background: #059669; color: #ffffff; border-color: #059669; }
+
+    .aisle-section { margin-bottom: 10px; }
+    .aisle-header {
+      font-size: 10px; font-weight: 700; color: var(--muted);
+      margin-bottom: 4px; display: flex; justify-content: space-between;
+      border-bottom: 1px solid var(--border); padding-bottom: 2px;
+    }
+    .slots-row {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(48px, 1fr)); gap: 5px; margin-top: 4px;
+    }
+    .slot-card {
+      min-height: 38px; padding: 5px 2px; border-radius: 6px; border: 1px solid var(--border);
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      cursor: pointer; font-size: 9px; font-weight: 800; transition: all 0.15s; position: relative;
+      text-align: center; line-height: 1.2;
+    }
+    .slot-card.avail { background: var(--green-light); border-color: var(--green-border); color: var(--green); }
+    .slot-card.occ { background: var(--rose-light); border-color: #fecdd3; color: var(--rose); }
+    .slot-card.pulse-highlight {
+      background: #fde047 !important; border: 2px solid #ca8a04 !important; color: #854d0e !important;
+      animation: kPulse 0.7s infinite alternate; transform: scale(1.08); z-index: 10;
+    }
+    @keyframes kPulse {
+      from { box-shadow: 0 0 6px rgba(234, 179, 8, 0.6); }
+      to { box-shadow: 0 0 20px rgba(234, 179, 8, 1); }
+    }
+
+    /* NVIDIA API MODAL */
+    #nvidiaKeyModal {
+      position: fixed; inset: 0; z-index: 99999; background: rgba(15, 23, 42, 0.5);
+      display: none; align-items: center; justify-content: center; backdrop-filter: blur(4px);
+    }
+    #nvidiaKeyModal.show { display: flex; }
+    .key-box {
+      background: #ffffff; border: 1px solid var(--border); border-radius: 18px;
+      padding: 26px; max-width: 480px; width: 90%; box-shadow: 0 20px 50px rgba(0,0,0,0.15);
+    }
+
+    #resModal {
+      position: fixed; inset: 0; z-index: 9999; background: rgba(15, 23, 42, 0.4);
+      display: none; align-items: center; justify-content: center; backdrop-filter: blur(4px);
+    }
+    #resModal.show { display: flex; }
+    .res-box {
+      background: #ffffff; border: 1px solid var(--border); border-radius: 16px;
+      padding: 24px; max-width: 440px; width: 90%; box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+    }
+    .res-item-btn {
+      background: #f8fafc; border: 1px solid var(--border); border-radius: 8px;
+      padding: 10px 12px; margin-bottom: 8px; cursor: pointer; display: flex;
+      justify-content: space-between; align-items: center; text-align: left; width: 100%;
+    }
+    .res-item-btn:hover { background: #f1f5f9; border-color: #cbd5e1; }
+
+    #welcomeModal {
+      position: fixed; inset: 0; z-index: 99999; background: rgba(15, 23, 42, 0.5);
+      display: none; align-items: center; justify-content: center; backdrop-filter: blur(4px);
+    }
+    #welcomeModal.show { display: flex; }
+    .welcome-box {
+      background: #ffffff; border: 2px solid var(--green); border-radius: 20px;
+      padding: 32px; text-align: center; max-width: 460px; width: 90%;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.15);
+    }
+
+    .toast {
+      position: fixed; bottom: 24px; right: 24px; padding: 12px 20px; border-radius: 8px;
+      font-size: 13px; font-weight: 600; z-index: 99999;
+      background: var(--dark-btn); color: #ffffff;
+      transform: translateY(80px); opacity: 0; transition: all 0.25s;
+    }
+    .toast.show { transform: translateY(0); opacity: 1; }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <div class="brand">
+      <div class="brand-icon">P</div>
+      <div>
+        <div class="brand-title">SmartPark Mega</div>
+      </div>
+      <span class="patent-tag">PATENT: TR 2026/014052</span>
+    </div>
+    <div class="nav-links">
+      <button onclick="openNvidiaModal()" style="font-size:12px;font-weight:700;color:#15803d;background:var(--green-light);border:1px solid var(--green-border);padding:6px 12px;border-radius:8px;cursor:pointer">
+        🔑 NVIDIA Cloud API Ayarı
+      </button>
+      <a href="entrance.html" class="nav-btn active">Giriş Kiosku</a>
+      <a href="app.html" class="nav-btn">📱 Müşteri Uygulaması</a>
+      <a href="guard.html" class="nav-btn">👮 Güvenlik Terminali</a>
+      <a href="floor.html" class="nav-btn">Kat Haritası</a>
+      <a href="upcoming.html" class="nav-btn">🔮 Yakında Gelecekler</a>
+    </div>
+  </div>
+</header>
+
+<div class="page-container">
+
+  <!-- 🟢 NVIDIA BUILD CANLI BAĞLANTI DURUMU -->
+  <div class="nvidia-banner">
+    <div style="display:flex;align-items:center;gap:12px">
+      <div style="font-size:22px">🟢</div>
+      <div>
+        <div style="font-size:13px;font-weight:800;letter-spacing:0.5px">NVIDIA Metropolis & Cloud NIM Altyapısı</div>
+        <div style="font-size:11px;color:#a1a1aa" id="nvidiaStatusSub">
+          Durum: <strong style="color:#4ade80" id="nimModeBadge">Yerel Edge + Cloud Hazır</strong> | Gecikme: <strong>7.8 ms</strong>
+        </div>
+      </div>
+    </div>
+    <div style="text-align:right">
+      <button onclick="openNvidiaModal()" style="background:#27272a;color:#ffffff;border:1px solid #3f3f46;padding:6px 12px;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer">
+        ⚙️ API Anahtarını Gir
+      </button>
+    </div>
+  </div>
+
+  <!-- ☀️ GÜNEŞ ENERJİSİ & TÜKETİM DASHBOARD'U -->
+  <div class="solar-dashboard">
+    <div style="display:flex;justify-content:space-between;align-items:center">
+      <div style="font-size:13px;font-weight:700;color:#334155;text-transform:uppercase">
+        ☀️ Çatı Güneş Enerjisi Santrali (GES) & Tüketim Dengesi
+      </div>
+      <span style="font-size:11px;font-weight:700;color:var(--green);background:var(--green-light);padding:4px 8px;border-radius:6px;border:1px solid var(--green-border)">
+        ● %100 Kendi Kendine Yeten Yeşil Tesis
+      </span>
+    </div>
+
+    <div class="solar-grid">
+      <div class="solar-stat-box">
+        <div style="font-size:11px;color:var(--muted);font-weight:600">Güneşten Üretilen Elektrik</div>
+        <div class="solar-val" style="color:var(--amber)" id="solarGen">1420.0 kWh</div>
+        <div style="font-size:10px;color:var(--muted);margin-top:2px">Bugünkü Toplam Üretim</div>
+      </div>
+
+      <div class="solar-stat-box">
+        <div style="font-size:11px;color:var(--muted);font-weight:600">Toplam Harcanan Elektrik</div>
+        <div class="solar-val" style="color:#334155" id="solarCons">60.0 kWh</div>
+        <div style="font-size:10px;color:var(--muted);margin-top:2px">EV Şarj + Tesis Aydınlatma</div>
+      </div>
+
+      <div class="solar-stat-box">
+        <div style="font-size:11px;color:var(--muted);font-weight:600">Net Yeşil Enerji Fazlası</div>
+        <div class="solar-val" style="color:var(--green)" id="solarSurplus">+1360.0 kWh</div>
+        <div style="font-size:10px;color:var(--muted);margin-top:2px">Şebekeye Verilen Temiz Güç</div>
+      </div>
+
+      <div class="solar-stat-box">
+        <div style="font-size:11px;color:var(--muted);font-weight:600">Günlük Enerji Tasarrufu</div>
+        <div class="solar-val" style="color:var(--text)" id="solarSav">₺12,070 TL</div>
+        <div style="font-size:10px;color:var(--muted);margin-top:2px">Sıfır Fatura Maliyeti</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="main-grid">
+    <!-- SOL: GİRİŞ KİOSKU & NVIDIA VİDEO ANALİZ -->
+    <div class="card">
+      <div class="card-title">
+        <span>🚗 Giriş Kiosku & NVIDIA Vision NIM</span>
+        <span id="targetNotice" style="color:var(--amber);font-size:11px;font-weight:700">KAT 1 (ZEMİN SUV)</span>
+      </div>
+
+      <div class="vision-ai-box">
+        <div class="vision-overlay-box">
+          <div style="display:flex;justify-content:space-between;font-size:9px;font-family:var(--font-mono);color:#4ade80">
+            <span>[NVIDIA NIM METROPOLIS: %99.8 GÜVEN]</span>
+            <span>GECİKME: 7.8ms</span>
+          </div>
+          <div style="text-align:center">
+            <div style="font-size:18px;font-weight:900;color:#ffffff;letter-spacing:2px;text-shadow:0 0 10px rgba(34,197,94,0.5)" id="detectedPlateDisplay">
+              34 SP 2026
+            </div>
+            <div style="font-size:10px;color:#a1a1aa;font-weight:600" id="detectedClassDisplay">
+              SINIF: TOGG T10X (EV SUV) ➔ KAT 1
+            </div>
+          </div>
+          <div style="font-size:9px;color:#22c55e;font-family:var(--font-mono);display:flex;justify-content:space-between">
+            <span>LiDAR: 1676mm</span>
+            <span>KANTAR: 2165kg</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Araç Modeli (Elektrikli, PHEV, Sedan, SUV)</label>
+        
+        <!-- HIZLI 1-TIK ARAÇ SEÇİM BUTONLARI -->
+        <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px">
+          <button type="button" class="quick-car-btn active" onclick="selectQuickVehicle('TOGG T10X')">⚡ TOGG T10X (Yerli EV SUV)</button>
+          <button type="button" class="quick-car-btn" onclick="selectQuickVehicle('TESLA MODEL Y')">⚡ Tesla Model Y (EV SUV)</button>
+          <button type="button" class="quick-car-btn" onclick="selectQuickVehicle('TESLA MODEL 3')">⚡ Tesla Model 3 (Sedan EV)</button>
+          <button type="button" class="quick-car-btn" onclick="selectQuickVehicle('FIAT EGEA')">🚗 Fiat Egea (Sedan)</button>
+          <button type="button" class="quick-car-btn" onclick="selectQuickVehicle('FORD RANGER RAPTOR')">🛑 Ford Ranger (Ağır)</button>
+        </div>
+
+        <select id="modelSelect" onchange="onModelChange(true)">
+          <optgroup label="⚡ Kat 1 Zemin Elektrikli & Plug-in Hibrit SUV'lar (0-Rampa)">
+            <option value="TOGG T10X" selected>TOGG T10X (Yerli EV SUV - Kat 1 EV Hub)</option>
+            <option value="TESLA MODEL Y">Tesla Model Y (EV SUV - Kat 1 EV Hub)</option>
+            <option value="BYD ATTO 3">BYD Atto 3 (EV Crossover - Kat 1 EV Hub)</option>
+            <option value="VOLVO XC60 PHEV">Volvo XC60 PHEV (Plug-in Hibrit SUV - Kat 1)</option>
+            <option value="HYUNDAI IONIQ 5">Hyundai Ioniq 5 (EV Crossover - Kat 1)</option>
+          </optgroup>
+          <optgroup label="🛑 Kat 1 Zemin Ağır Pickup & Benzinli SUV (0-Rampa)">
+            <option value="FORD RANGER RAPTOR">Ford Ranger Raptor (3.2 Ton - Kat 1)</option>
+            <option value="MERCEDES G-CLASS">Mercedes G-Class (3.1 Ton - Kat 1)</option>
+            <option value="PEUGEOT 3008">Peugeot 3008 (SUV - Kat 1)</option>
+          </optgroup>
+          <optgroup label="⚡ Kat 2-5 Üst Kat Elektrikli & Plug-in Hibrit Sedanlar">
+            <option value="TESLA MODEL 3">Tesla Model 3 (EV Sedan - Kat 2-5 EV Hub)</option>
+            <option value="PORSCHE TAYCAN">Porsche Taycan (EV Sport - Kat 2-5 EV Hub)</option>
+            <option value="BMW 330e PHEV">BMW 330e PHEV (Plug-in Hibrit - Kat 2-5)</option>
+            <option value="TOYOTA PRIUS PHEV">Toyota Prius PHEV (Plug-in Hibrit - Kat 2-5)</option>
+          </optgroup>
+          <optgroup label="🚗 Kat 2-5 Üst Kat Standart Benzinli Sedan & Kompakt">
+            <option value="FIAT EGEA">Fiat Egea (Sedan - Kat 2-5)</option>
+            <option value="RENAULT CLIO">Renault Clio (Kompakt - Kat 2-5)</option>
+            <option value="VOLKSWAGEN PASSAT">VW Passat (Sedan - Kat 2-5)</option>
+            <option value="TOYOTA COROLLA">Toyota Corolla (Sedan - Kat 2-5)</option>
+          </optgroup>
+        </select>
+      </div>
+
+      <div id="evNoticeBadge" style="background:var(--green-light);border:1px solid var(--green-border);padding:10px;border-radius:8px;font-size:11px;color:var(--green);font-weight:600;margin-bottom:14px">
+        ⚡ <strong>Elektrikli Araç Önceliği:</strong> Araç doğrudan <strong>Kat 1 Zemin 120kW EV Şarj Hub'ına (Row C)</strong> yönlendirilecektir.
+      </div>
+
+      <div class="form-group">
+        <label>Plaka Numarası</label>
+        <input id="plateInp" value="34 SP 2026" oninput="updateVisionDisplay()" style="text-transform:uppercase" />
+      </div>
+
+      <div class="form-group">
+        <label>Sürücü Tercihi</label>
+        <div class="profile-grid">
+          <label class="profile-pill" id="profPill-NONE" onclick="setProfile('NONE', this)">
+            <input type="radio" name="prof" value="NONE" /> 🔘 Standart (Hiçbiri)
+          </label>
+          <label class="profile-pill" id="profPill-WOMAN" onclick="setProfile('WOMAN', this)">
+            <input type="radio" name="prof" value="WOMAN" /> 🌸 Kadın / Aile
+          </label>
+          <label class="profile-pill" id="profPill-DISABLED" onclick="setProfile('DISABLED', this)">
+            <input type="radio" name="prof" value="DISABLED" /> ♿ Engelli Alanı
+          </label>
+          <label class="profile-pill active" id="profPill-EV_CHARGING" onclick="setProfile('EV_CHARGING', this)">
+            <input type="radio" name="prof" value="EV_CHARGING" checked /> ⚡ 120kW EV Şarj
+          </label>
+        </div>
+      </div>
+
+      <!-- ANİMASYONLU GİRİŞ BARİYERİ -->
+      <div id="barrierVisualBox" style="background:#0f172a;border-radius:12px;padding:12px 16px;margin-bottom:12px;display:flex;align-items:center;justify-content:space-between;color:#ffffff">
+        <div style="display:flex;align-items:center;gap:14px">
+          <div style="width:20px;height:48px;position:relative;display:flex;align-items:flex-end">
+            <div id="barrierArm" style="width:8px;height:42px;background:#ef4444;border-radius:3px;transform-origin:bottom center;transform:rotate(0deg);transition:all 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);box-shadow:0 0 10px rgba(239,68,68,0.8)"></div>
+          </div>
+          <div>
+            <div id="barrierStatusText" style="font-size:13px;font-weight:900;color:#ef4444;letter-spacing:0.5px">🛑 BARİYER KAPALI</div>
+            <div id="barrierSubText" style="font-size:10px;color:#94a3b8">Araç seçin veya butona basın</div>
+          </div>
+        </div>
+        <button id="btnQuickOpen" onclick="submitEntry()" style="padding:8px 14px;border-radius:8px;border:none;background:#22c55e;color:#ffffff;font-size:11px;font-weight:800;cursor:pointer">
+          ⚡ Bariyeri Aç
+        </button>
+      </div>
+
+      <button class="btn" style="background:#16a34a;color:#ffffff;margin-bottom:8px;font-size:13px;font-weight:800;box-shadow:0 4px 12px rgba(22,163,74,0.3)" onclick="submitEntry()">
+        🟢 SEÇİLEN ARACI İÇERİ AL & BARİYERİ AÇ (Sesli Anons)
+      </button>
+      <button class="btn btn-outline" onclick="openResModal()">📅 Rezervasyon Kodunu Doğrula (VIP)</button>
+    </div>
+
+    <!-- SAĞ: CANLI PARK YERLERİ HARİTASI (KİOSK SLOT MAP) & DOLULUK -->
+    <div class="card">
+      <div class="card-title">
+        <span>🗺️ Canlı Kiosk Park Haritası (1000 Slot)</span>
+        <span id="genStats" style="color:var(--text);font-size:12px">%0 Dolu</span>
+      </div>
+
+      <!-- KİOSK KAT SEÇİCİ SEKMELER -->
+      <div class="kiosk-floor-tabs" id="kioskFloorTabs">
+        <button class="k-fl-tab active" onclick="setKioskFloor(1, this)">Kat 1 (Zemin SUV & EV)</button>
+        <button class="k-fl-tab" onclick="setKioskFloor(2, this)">Kat 2</button>
+        <button class="k-fl-tab" onclick="setKioskFloor(3, this)">Kat 3</button>
+        <button class="k-fl-tab" onclick="setKioskFloor(4, this)">Kat 4</button>
+        <button class="k-fl-tab" onclick="setKioskFloor(5, this)">Kat 5</button>
+      </div>
+
+      <!-- KİOSK KORİDOR FİLTRESİ -->
+      <div style="display:flex;gap:4px;overflow-x:auto;margin-bottom:8px;padding-bottom:2px">
+        <button class="k-row-filter active" onclick="setKioskRowFilter('ALL', this)">Tüm Sıralar (A-J)</button>
+        <button class="k-row-filter" onclick="setKioskRowFilter('C', this)">⚡ Sıra C (120kW EV)</button>
+        <button class="k-row-filter" onclick="setKioskRowFilter('A', this)">♿ Sıra A (Engelli)</button>
+        <button class="k-row-filter" onclick="setKioskRowFilter('B', this)">🌸 Sıra B (Kadın)</button>
+        <button class="k-row-filter" onclick="setKioskRowFilter('J', this)">🛑 Sıra J (Ağır Zemin)</button>
+      </div>
+
+      <!-- 200 SLOTLUK GERÇEK ZAMANLI PARK YERLERİ HARİTASI -->
+      <div id="kioskSlotContainer" style="max-height:360px;overflow-y:auto;margin-bottom:14px;background:#ffffff;border:1px solid var(--border);padding:10px;border-radius:10px"></div>
+
+      <!-- KAT BAZLI ÖZET İLERLEME ÇUBUKLARI -->
+      <div style="font-size:11px;font-weight:700;color:var(--muted);margin-bottom:8px">📊 Kat Bazlı Genel Doluluk Özeti:</div>
+      <div id="floorBarList"></div>
+    </div>
+  </div>
+
+</div>
+
+<!-- 🔑 NVIDIA CLOUD API MODALI -->
+<div id="nvidiaKeyModal">
+  <div class="key-box">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+      <span style="font-size:14px;font-weight:800">🔑 NVIDIA Cloud NIM API Bağlantısı</span>
+      <button onclick="closeNvidiaModal()" style="background:transparent;border:none;font-size:18px;cursor:pointer">✕</button>
+    </div>
+
+    <div style="font-size:12px;color:var(--muted);margin-bottom:12px;line-height:1.5">
+      <a href="https://build.nvidia.com" target="_blank" style="color:#059669;font-weight:700">build.nvidia.com</a> sitesinden aldığınız ücretsiz <code>nvapi-...</code> geliştirici anahtarınızı buraya yapıştırın:
+    </div>
+
+    <input id="nvidiaKeyInp" placeholder="nvapi-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" style="font-family:var(--font-mono);font-size:12px;margin-bottom:12px" />
+
+    <div style="display:flex;gap:8px;margin-bottom:12px">
+      <button onclick="saveNvidiaKey()" class="btn btn-dark" style="flex:1;margin-bottom:0">
+        💾 Anahtarı Kaydet
+      </button>
+      <button onclick="testNvidiaCloudLive()" class="btn btn-outline" style="flex:1;margin-bottom:0">
+        🧪 Canlı Bulutu Test Et
+      </button>
+    </div>
+
+    <div id="cloudTestResult" style="display:none;background:#f8fafc;border:1px solid var(--border);padding:10px;border-radius:8px;font-size:11px;line-height:1.4"></div>
+  </div>
+</div>
+
+<!-- REZERVASYON MODAL -->
+<div id="resModal">
+  <div class="res-box">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+      <span style="font-size:14px;font-weight:700">VIP Rezervasyon Doğrulama</span>
+      <button onclick="closeResModal()" style="background:transparent;border:none;font-size:18px;cursor:pointer">✕</button>
+    </div>
+
+    <div style="font-size:12px;color:var(--muted);margin-bottom:12px">
+      Kayıtlı rezervasyonlar (Tıklayarak doğrudan bariyeri açabilirsiniz):
+    </div>
+
+    <div id="activeResList" style="max-height: 180px; overflow-y: auto; margin-bottom: 14px;"></div>
+
+    <div style="display:flex;gap:8px">
+      <input id="resCodeInp" placeholder="RES-TOGG" style="text-transform:uppercase" />
+      <button onclick="submitManualReservation()" class="btn btn-dark" style="width:auto;padding:10px 18px">
+        Doğrula
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- WELCOME MODAL -->
+<div id="welcomeModal">
+  <div class="welcome-box">
+    <div style="font-size:11px;letter-spacing:1px;color:var(--muted);text-transform:uppercase;font-weight:700">SmartPark Giriş Onayı (NVIDIA Riva Sesli)</div>
+    <div style="font-size:32px;font-weight:800;color:var(--text);margin:8px 0" id="wPlate">34 VIP 1000</div>
+    <div style="font-size:22px;font-weight:700;color:var(--green);margin-bottom:6px" id="wSlot">KAT 1 → C-01</div>
+    <div style="font-size:13px;color:var(--muted);margin-bottom:14px" id="wReason">120 kW Hızlı DC EV Şarj İstasyonu</div>
+    <div style="background:var(--green-light);border:1px solid var(--green-border);padding:8px 12px;border-radius:8px;font-size:12px;color:var(--green);font-weight:600">
+      📢 <strong>NVIDIA Riva Voice:</strong> Rota anonsu Türkçe olarak seslendirildi!
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  let activeProfile = 'NONE';
+
+  function openNvidiaModal() {
+    document.getElementById('nvidiaKeyInp').value = SP.getNvidiaKey();
+    document.getElementById('nvidiaKeyModal').classList.add('show');
+  }
+
+  function closeNvidiaModal() {
+    document.getElementById('nvidiaKeyModal').classList.remove('show');
+  }
+
+  function saveNvidiaKey() {
+    const key = document.getElementById('nvidiaKeyInp').value.trim();
+    SP.setNvidiaKey(key);
+    showToast(key ? '✅ NVIDIA API Anahtarı Başarıyla Kaydedildi!' : 'ℹ️ API Anahtarı Sıfırlandı (Yerel Fallback Devrede).');
+    closeNvidiaModal();
+    render();
+  }
+
+  async function testNvidiaCloudLive() {
+    const box = document.getElementById('cloudTestResult');
+    box.style.display = 'block';
+    box.innerHTML = '⏳ NVIDIA Cloud NIM sunucularına bağlanılıyor...';
+
+    const r = await SP.callNvidiaCloudVision('34 VIP 1000 TOGG T10X Giriş Teyidi');
+    if (r.cloudConnected) {
+      box.innerHTML = `
+        <strong style="color:#15803d">🟢 BAĞLANTI BAŞARILI!</strong><br>
+        <strong>Model:</strong> ${r.model}<br>
+        <strong>Gecikme:</strong> ${r.latencyMs} ms<br>
+        <strong>Yanıt:</strong> ${r.output}
+      `;
+    } else {
+      box.innerHTML = `
+        <strong style="color:#b91c1c">🟡 YEREL EDGE FALLBACK:</strong> ${r.error || r.output}<br>
+        <em>Sistem yerel algoritmaya geçti; otopark kesintisiz çalışıyor.</em>
+      `;
+    }
+  }
+
+  let currentKioskHighlightSlot = null;
+
+  function selectProfileByName(p) {
+    activeProfile = p;
+    document.querySelectorAll('.profile-pill').forEach(pill => {
+      const radio = pill.querySelector('input[type="radio"]');
+      if (radio && radio.value === p) {
+        pill.classList.add('active');
+        radio.checked = true;
+      } else {
+        pill.classList.remove('active');
+        if (radio) radio.checked = false;
+      }
+    });
+  }
+
+  function setProfile(p, el) {
+    activeProfile = p;
+    document.querySelectorAll('.profile-pill').forEach(opt => {
+      opt.classList.remove('active');
+      const radio = opt.querySelector('input[type="radio"]');
+      if (radio) radio.checked = false;
+    });
+    if (el) {
+      el.classList.add('active');
+      const radio = el.querySelector('input[type="radio"]');
+      if (radio) radio.checked = true;
+    }
+  }
+
+  function updateVisionDisplay() {
+    const plate = document.getElementById('plateInp').value.toUpperCase().trim();
+    document.getElementById('detectedPlateDisplay').textContent = plate || '34 SP 2026';
+  }
+
+  function onModelChange(userTriggered = false) {
+    const sel = document.getElementById('modelSelect').value;
+    const cat = SP.VEHICLE_CATALOG[sel];
+    if (cat) {
+      document.getElementById('targetNotice').textContent = cat.isSUV ? 'KAT 1 (ZEMİN SUV)' : 'KAT 2-5 (ÜST KAT SEDAN)';
+      document.getElementById('targetNotice').style.color = cat.isSUV ? '#d97706' : '#059669';
+
+      document.getElementById('detectedClassDisplay').textContent = `SINIF: ${sel} (${cat.body}) ➔ ${cat.isSUV ? 'KAT 1' : 'KAT 2-5'}`;
+
+      const badge = document.getElementById('evNoticeBadge');
+      if (cat.ev) {
+        selectProfileByName('EV_CHARGING');
+        badge.style.display = 'block';
+        badge.innerHTML = `⚡ <strong>Elektrikli Araç Önceliği Devrede:</strong> Sürücü tercihi otomatik olarak <strong>${cat.isSUV ? 'Kat 1 Zemin' : 'Kat 2-5'} 120kW EV Şarj Hub'ına (Row C)</strong> ayarlandı.`;
+      } else {
+        selectProfileByName('NONE');
+        badge.style.display = 'none';
+      }
+
+      // Yeni benzersiz plaka hazırla
+      const db = SP.getDB();
+      let newPlate = `34 SP ${Math.floor(1000 + Math.random()*9000)}`;
+      if (db && db.vehicles) {
+        while (db.vehicles.find(v => v.plate === newPlate)) {
+          newPlate = `34 SP ${Math.floor(1000 + Math.random()*9000)}`;
+        }
+      }
+      document.getElementById('plateInp').value = newPlate;
+      updateVisionDisplay();
+
+      // Kullanıcı listeden araç seçtiğinde doğrudan bariyeri aç ve otoparka al!
+      if (userTriggered) {
+        submitEntry();
+      }
+    }
+  }
+
+  function openResModal() {
+    const db = SP.getDB();
+    const list = db.reservations || [];
+    
+    document.getElementById('activeResList').innerHTML = list.map(r => `
+      <div class="res-item-btn" onclick="executeReservationEntry('${r.code}')">
+        <div>
+          <div style="font-weight:700;color:var(--text)">${r.plate} — ${r.model}</div>
+          <div style="font-size:11px;color:var(--muted)">Kod: <strong>${r.code}</strong> | ${r.floorName} / ${r.slotCode}</div>
+        </div>
+        <div style="font-size:11px;color:var(--green);font-weight:700">Giriş Yap ➔</div>
+      </div>
+    `).join('');
+
+    document.getElementById('resModal').classList.add('show');
+  }
+
+  function closeResModal() {
+    document.getElementById('resModal').classList.remove('show');
+  }
+
+  function executeReservationEntry(code) {
+    closeResModal();
+    const r = SP.verifyReservationEntry(code);
+
+    if (r.error) {
+      showToast(r.error);
+      return;
+    }
+
+    document.getElementById('wPlate').textContent = r.plate;
+    document.getElementById('wSlot').textContent = `🅿️ ${r.floorName} → ${r.slotCode}`;
+    document.getElementById('wReason').textContent = r.reason;
+
+    const modal = document.getElementById('welcomeModal');
+    modal.classList.add('show');
+    setTimeout(() => modal.classList.remove('show'), 3500);
+
+    render();
+  }
+
+  function submitManualReservation() {
+    const code = document.getElementById('resCodeInp').value.trim();
+    executeReservationEntry(code);
+  }
+
+  let activeKioskFloorId = 1;
+  let activeKioskRowFilter = 'ALL';
+
+  function setKioskFloor(floorId, el) {
+    activeKioskFloorId = floorId;
+    document.querySelectorAll('.k-fl-tab').forEach(btn => btn.classList.remove('active'));
+    if (el) el.classList.add('active');
+    renderKioskSlotMap();
+  }
+
+  function setKioskRowFilter(rf, el) {
+    activeKioskRowFilter = rf;
+    document.querySelectorAll('.k-row-filter').forEach(b => b.classList.remove('active'));
+    if (el) el.classList.add('active');
+    renderKioskSlotMap();
+  }
+
+  function selectQuickVehicle(modelName) {
+    const sel = document.getElementById('modelSelect');
+    if (sel) sel.value = modelName;
+    document.querySelectorAll('.quick-car-btn').forEach(b => {
+      b.classList.toggle('active', b.textContent.includes(modelName));
+    });
+    onModelChange(true);
+  }
+
+  function renderKioskSlotMap(highlightCode = null) {
+    const db = SP.getDB();
+    if (!db) return;
+    const floor = db.floors.find(f => f.id === activeKioskFloorId);
+    if (!floor) return;
+
+    const container = document.getElementById('kioskSlotContainer');
+    if (!container) return;
+
+    if (highlightCode !== null) {
+      currentKioskHighlightSlot = highlightCode;
+    }
+    const targetHighlight = currentKioskHighlightSlot;
+
+    let rows = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J'];
+    if (activeKioskRowFilter !== 'ALL') {
+      rows = rows.filter(r => r === activeKioskRowFilter);
+    }
+
+    let html = '';
+
+    for (const row of rows) {
+      let badge = '';
+      if (row === 'A') badge = '<span style="color:var(--muted)">[♿ Engelli 0-Rampa]</span>';
+      else if (row === 'B') badge = '<span style="color:var(--muted)">[🌸 Kadın / Aile]</span>';
+      else if (row === 'C') badge = '<span style="color:var(--green);font-weight:700">[⚡ 120kW DC Ultra EV Şarj]</span>';
+      else if (row === 'J' && activeKioskFloorId === 1) badge = '<span style="color:var(--amber)">[🛑 Ağır Pickup & SUV]</span>';
+
+      html += `
+        <div class="aisle-section">
+          <div class="aisle-header">
+            <span>SIRA ${row} ${badge}</span>
+            <span style="font-size:10px;opacity:0.7">20 Slot</span>
+          </div>
+          <div class="slots-row">
+      `;
+
+      const slots = floor.slots.filter(s => s.row === row);
+      for (const slot of slots) {
+        let cls = slot.occupied ? 'occ' : 'avail';
+        if (slot.code === targetHighlight && activeKioskFloorId === slot.floorId) {
+          cls += ' pulse-highlight';
+        }
+        let statusText = slot.occupied ? (slot.plate ? slot.plate.slice(0, 6) : 'DOLU') : 'BOŞ';
+        let iconPrefix = '';
+        if (slot.evCharger) iconPrefix = '⚡';
+        else if (slot.disabled) iconPrefix = '♿';
+        else if (slot.womanFamily) iconPrefix = '🌸';
+
+        html += `
+          <div class="slot-card ${cls}" onclick="showToast('${slot.code} — ${slot.occupied ? (slot.model + ' (' + (slot.plate||'') + ')') : (slot.evCharger ? '120kW EV Şarj İstasyonu (Müsait)' : 'Müsait Slot')}')" title="${slot.code} — ${slot.occupied ? (slot.model || 'Dolu') : 'Boş'}">
+            <span style="font-weight:800">${iconPrefix}${slot.code}</span>
+            <span style="font-size:7.5px;font-weight:600;opacity:0.85">${statusText}</span>
+          </div>
+        `;
+      }
+      html += `</div></div>`;
+    }
+
+    container.innerHTML = html;
+  }
+
+  function submitEntry() {
+    const db = SP.getDB();
+    if (!db) {
+      showToast('Sistem başlatılıyor...');
+      return;
+    }
+    let plate = document.getElementById('plateInp').value.trim();
+    const model = document.getElementById('modelSelect').value;
+
+    // Plaka zaten otoparktaysa veya boşsa otomatik yeni geçerli plaka üret, kullanıcıyı asla engelleme!
+    while (!plate || (db.vehicles && db.vehicles.find(v => v.plate === plate))) {
+      plate = `34 SP ${Math.floor(1000 + Math.random()*9000)}`;
+    }
+    document.getElementById('plateInp').value = plate;
+    updateVisionDisplay();
+
+    const r = SP.processGateEntry('gate_north', plate, model, null, null, activeProfile);
+    if (r.error) {
+      showToast(r.error);
+      return;
+    }
+
+    // 🟢 BARİYER AÇILMA ANİMASYONU
+    const arm = document.getElementById('barrierArm');
+    const sText = document.getElementById('barrierStatusText');
+    const sSub = document.getElementById('barrierSubText');
+    if (arm) {
+      arm.style.transform = 'rotate(-85deg)';
+      arm.style.background = '#22c55e';
+      arm.style.boxShadow = '0 0 16px rgba(34,197,94,0.9)';
+    }
+    if (sText) {
+      sText.textContent = '🟢 BARİYER AÇILDI — GEÇİNİZ';
+      sText.style.color = '#22c55e';
+    }
+    if (sSub) {
+      sSub.textContent = `🅿️ ${r.floorName} → ${r.slotCode} alanına yönlendirildiniz.`;
+    }
+
+    // Sesli Türkçe Anons
+    try {
+      SP.speakVoice(`Hoş geldiniz. ${plate} plakalı ${model} aracınız ${r.floorName} ${r.slotCode} alanına yönlendirildi. Bariyer açıldı, iyi günler dileriz.`);
+    } catch (_) {}
+
+    document.getElementById('wPlate').textContent = r.plate;
+    document.getElementById('wSlot').textContent = `🅿️ ${r.floorName} → ${r.slotCode}`;
+    document.getElementById('wReason').textContent = r.reason;
+
+    const modal = document.getElementById('welcomeModal');
+    if (modal) {
+      modal.classList.add('show');
+      setTimeout(() => modal.classList.remove('show'), 3500);
+    }
+
+    // Kiosk haritasını aracın atandığı kata çevir ve slotu yakıp söndür
+    const assignedFloorId = r.floorName.includes('1') ? 1 : (r.floorName.includes('2') ? 2 : (r.floorName.includes('3') ? 3 : (r.floorName.includes('4') ? 4 : 5)));
+    activeKioskFloorId = assignedFloorId;
+    document.querySelectorAll('.k-fl-tab').forEach((b, idx) => {
+      b.classList.toggle('active', (idx + 1) === activeKioskFloorId);
+    });
+
+    currentKioskHighlightSlot = r.slotCode;
+    render();
+    renderKioskSlotMap(r.slotCode);
+
+    // Yeni araç için bir sonraki plakayı hazırla
+    document.getElementById('plateInp').value = `34 SP ${Math.floor(1000 + Math.random()*9000)}`;
+    updateVisionDisplay();
+
+    // 4.5 sn sonra bariyeri tekrar kapat
+    setTimeout(() => {
+      if (arm) {
+        arm.style.transform = 'rotate(0deg)';
+        arm.style.background = '#ef4444';
+        arm.style.boxShadow = '0 0 10px rgba(239,68,68,0.8)';
+      }
+      if (sText) {
+        sText.textContent = '🛑 BARİYER KAPALI';
+        sText.style.color = '#ef4444';
+      }
+      if (sSub) {
+        sSub.textContent = 'Araç seçin veya butona basın';
+      }
+    }, 4500);
+  }
+
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.className = 'toast show';
+    setTimeout(() => t.classList.remove('show'), 3500);
+  }
+
+  function render() {
+    const stats = SP.getStats();
+    if (!stats) return;
+
+    if (stats.hasApiKey) {
+      document.getElementById('nimModeBadge').textContent = 'NVIDIA Cloud Canlı Bağlı';
+      document.getElementById('nimModeBadge').style.color = '#4ade80';
+    } else {
+      document.getElementById('nimModeBadge').textContent = 'Yerel Edge Fallback (Hazır)';
+      document.getElementById('nimModeBadge').style.color = '#fde047';
+    }
+
+    document.getElementById('solarGen').textContent = stats.solarGenerated + ' kWh';
+    document.getElementById('solarCons').textContent = stats.evConsumption + ' kWh';
+    document.getElementById('solarSurplus').textContent = '+' + stats.netGreenSurplus + ' kWh';
+    document.getElementById('solarSav').textContent = '₺' + stats.solarSavingsTl.toLocaleString('tr-TR') + ' TL';
+
+    document.getElementById('genStats').textContent = `%${stats.pct} Dolu (${stats.occupied}/1000 Araç)`;
+
+    document.getElementById('floorBarList').innerHTML = stats.floors.map(f => {
+      let color = '#059669';
+      if (f.pct > 70) color = '#e11d48';
+      else if (f.pct > 40) color = '#d97706';
+
+      let tag = (f.id === 1) ? '<span style="color:var(--amber);font-size:11px;font-weight:600">[Zemin: Tüm SUV & Ağır]</span>' : '<span style="color:var(--green);font-size:11px;font-weight:600">[Üst Kat: Sedan & Kompakt]</span>';
+
+      return `
+        <div class="floor-row" style="margin-bottom:6px">
+          <div style="display:flex;justify-content:space-between;align-items:center;font-size:11px;font-weight:600">
+            <div>${f.name} ${tag}</div>
+            <span style="color:${color};font-weight:700">%${f.pct} (${f.occupied}/200)</span>
+          </div>
+          <div class="progress-bar-bg" style="height:5px">
+            <div class="progress-bar-fill" style="width:${f.pct}%;background:${color}"></div>
+          </div>
+        </div>
+      `;
+    }).join('');
+
+    renderKioskSlotMap();
+  }
+
+  SP.onUpdate(() => render());
+  onModelChange();
+  render();
+</script>
+</body>
+</html>

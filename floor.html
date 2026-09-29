@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SmartPark — Kat Haritası & Güvenlik</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet" />
+  <script src="smartpark.js"></script>
+  <style>
+    :root {
+      --bg: #f8fafc;
+      --card: #ffffff;
+      --border: #e2e8f0;
+      --text: #0f172a;
+      --muted: #64748b;
+      --dark-btn: #18181b;
+      --dark-btn-hover: #27272a;
+      --green: #059669;
+      --green-light: #ecfdf5;
+      --green-border: #a7f3d0;
+      --amber: #d97706;
+      --rose: #e11d48;
+      --rose-light: #fff1f2;
+      --font-mono: 'JetBrains Mono', monospace;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif;
+      min-height: 100vh;
+    }
+
+    header {
+      background: #ffffff; border-bottom: 1px solid var(--border);
+      padding: 14px 0;
+    }
+    .header-inner {
+      max-width: 1080px; margin: 0 auto; padding: 0 24px;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .brand { display: flex; align-items: center; gap: 10px; }
+    .brand-icon {
+      width: 34px; height: 34px; border-radius: 8px;
+      background: var(--dark-btn); color: #fff; display: flex; align-items: center;
+      justify-content: center; font-size: 15px; font-weight: 800;
+    }
+    .brand-title { font-size: 16px; font-weight: 800; color: var(--text); }
+    .patent-tag {
+      font-size: 11px; font-family: var(--font-mono); color: #475569;
+      background: #f1f5f9; padding: 4px 8px; border-radius: 6px; border: 1px solid #cbd5e1;
+    }
+    .nav-links { display: flex; gap: 8px; }
+    .nav-btn {
+      padding: 7px 14px; border-radius: 8px; font-size: 12px; font-weight: 600; text-decoration: none;
+      border: 1px solid var(--border); background: #ffffff; color: var(--text);
+      transition: all 0.15s;
+    }
+    .nav-btn:hover { background: #f1f5f9; }
+    .nav-btn.active { background: var(--dark-btn); color: #ffffff; border-color: var(--dark-btn); }
+
+    .page-container {
+      max-width: 1080px; margin: 28px auto; padding: 0 24px;
+    }
+
+    /* KAT SEÇİCİ */
+    .floor-tabs {
+      display: flex; gap: 8px; margin-bottom: 18px;
+    }
+    .fl-tab {
+      padding: 8px 16px; border-radius: 8px; font-size: 12px; font-weight: 700;
+      cursor: pointer; border: 1px solid var(--border); background: #ffffff;
+      color: var(--muted); transition: all 0.15s;
+    }
+    .fl-tab.active {
+      background: var(--dark-btn); color: #ffffff; border-color: var(--dark-btn);
+    }
+
+    .action-bar {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 12px 18px; background: #ffffff; border: 1px solid var(--border);
+      border-radius: 12px; margin-bottom: 20px;
+    }
+    .filter-btn {
+      padding: 6px 12px; border-radius: 6px; font-size: 11px; font-weight: 600;
+      border: 1px solid var(--border); background: #f8fafc; color: var(--muted); cursor: pointer;
+    }
+    .filter-btn.active { background: var(--dark-btn); color: #ffffff; border-color: var(--dark-btn); }
+
+    .btn-guard {
+      background: var(--dark-btn); color: #ffffff; border: none;
+      padding: 7px 14px; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer;
+    }
+
+    .main-grid {
+      display: grid; grid-template-columns: 1fr 300px; gap: 24px;
+    }
+    .card {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 16px; padding: 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+    }
+
+    /* KORİDORLAR VE SLOTLAR */
+    .aisle-section { margin-bottom: 16px; }
+    .aisle-header {
+      font-size: 11px; font-weight: 700; letter-spacing: 0.5px; color: var(--muted);
+      margin-bottom: 8px; display: flex; justify-content: space-between;
+      border-bottom: 1px solid var(--border); padding-bottom: 4px;
+    }
+    .slots-row {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(68px, 1fr)); gap: 6px;
+    }
+    .slot-card {
+      min-height: 48px; padding: 6px 4px; border-radius: 8px; border: 1px solid var(--border);
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      cursor: pointer; font-size: 10px; font-weight: 800; transition: all 0.15s; position: relative;
+      text-align: center; line-height: 1.2;
+    }
+    .slot-card:hover { transform: translateY(-2px); z-index: 10; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+
+    .slot-card.avail { background: var(--green-light); border-color: var(--green-border); color: var(--green); }
+    .slot-card.occ { background: var(--rose-light); border-color: #fecdd3; color: var(--rose); }
+
+    .beacon-dot {
+      position: absolute; top: 3px; right: 3px; width: 6px; height: 6px; border-radius: 50%;
+      background: var(--green);
+    }
+
+    /* GÜVENLİK MODAL */
+    #guardModal {
+      position: fixed; inset: 0; z-index: 9999; background: rgba(15, 23, 42, 0.4);
+      display: none; align-items: center; justify-content: center; backdrop-filter: blur(4px);
+    }
+    #guardModal.show { display: flex; }
+    #slotDetailModal.show { display: flex !important; }
+    .guard-box {
+      width: 420px; background: #ffffff; border: 1px solid var(--border); border-radius: 16px;
+      padding: 24px; box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+    }
+
+    .toast {
+      position: fixed; bottom: 24px; right: 24px; padding: 12px 20px; border-radius: 8px;
+      font-size: 13px; font-weight: 600; z-index: 99999;
+      background: var(--dark-btn); color: #ffffff;
+      transform: translateY(80px); opacity: 0; transition: all 0.25s;
+    }
+    .toast.show { transform: translateY(0); opacity: 1; }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <div class="brand">
+      <div class="brand-icon">P</div>
+      <div>
+        <div class="brand-title">SmartPark Kat Haritası — <span id="currentFlName" style="color:var(--green)">Kat 1</span></div>
+      </div>
+      <span class="patent-tag">PATENT: TR 2026/014052</span>
+    </div>
+    <div class="nav-links">
+      <a href="entrance.html" class="nav-btn">Giriş Kiosku</a>
+      <a href="floor.html" class="nav-btn active">Kat Haritası</a>
+      <a href="app.html" class="nav-btn">📱 Müşteri</a>
+      <a href="guard.html" class="nav-btn">👮 Güvenlik</a>
+      <a href="portal.html" class="nav-btn">Sürücü Portalı</a>
+      <a href="upcoming.html" class="nav-btn">🔮 Yakında Gelecekler</a>
+    </div>
+  </div>
+</header>
+
+<div class="page-container">
+
+  <div class="floor-tabs" id="flTabContainer"></div>
+
+  <div class="action-bar">
+    <div style="display:flex;gap:6px;flex-wrap:wrap">
+      <button class="filter-btn active" onclick="setFilter('ALL', this)">Tüm Slotlar (200)</button>
+      <button class="filter-btn" onclick="setFilter('EV', this)">⚡ 120kW EV (Sıra C)</button>
+      <button class="filter-btn" onclick="setFilter('DISABLED', this)">♿ Engelli (Sıra A)</button>
+      <button class="filter-btn" onclick="setFilter('WOMAN', this)">🌸 Kadın/Aile (Sıra B)</button>
+      <button class="filter-btn" onclick="setFilter('HEAVY', this)">🛑 Zemin Ağır (Sıra J)</button>
+      <button class="filter-btn" onclick="setFilter('OCCUPIED', this)">🔴 Sadece Dolular</button>
+      <button class="filter-btn" onclick="setFilter('AVAILABLE', this)">🟢 Sadece Boşlar</button>
+    </div>
+    <button class="btn-guard" onclick="openGuardModal()">👮 Güvenlik El Terminali</button>
+  </div>
+
+  <div class="main-grid">
+    <!-- SOL: SLOT DÜZENİ -->
+    <div class="card">
+      <div style="background:#eff6ff;border:1px solid #bfdbfe;color:#1e40af;padding:10px 14px;border-radius:10px;font-size:11px;margin-bottom:14px;display:flex;justify-content:space-between;align-items:center">
+        <span>📌 <strong>3D/WebGL Dijital İkiz (Digital Twin) Haritası:</strong> Kullanıcı talebi doğrultusunda Faz 10 (Three.js WebGL Motoru) yol haritasına aktarılmıştır. Şu an <strong>Canlı Kat & Slot Yönetim Tablosu</strong> kesintisiz ve yüksek performansla aktiftir.</span>
+      </div>
+
+      <div id="standardHeaderBar" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;font-size:12px;color:var(--muted)">
+        <span id="flSummaryText">Yeşil slotlar boş, kırmızı slotlar doludur. Detay veya çıkış için slota tıklayın.</span>
+        <span style="color:var(--green);font-weight:600">● Tavan RGB LED Aydınlatma Devrede</span>
+      </div>
+      <div id="aisleContainer"></div>
+    </div>
+
+    <!-- SAĞ: BİLGİ & DENETİM -->
+    <div class="card">
+      <div style="font-size:12px;font-weight:700;text-transform:uppercase;color:var(--muted);margin-bottom:12px">
+        👮 Güvenlik Denetim Günlüğü
+      </div>
+      <div id="guardLogList" style="max-height:260px;overflow-y:auto;display:flex;flex-direction:column;gap:8px;margin-bottom:16px"></div>
+
+      <div style="background:#f8fafc;padding:14px;border-radius:10px;border:1px solid var(--border);font-size:12px;line-height:1.8">
+        <div>🏢 <strong>Toplam Kapasite:</strong> 1000 Araç</div>
+        <div>🌸 <strong>Kadın / Aile:</strong> 100 Yer (Row B)</div>
+        <div>♿ <strong>Engelli Alanı:</strong> 75 Yer (Row A)</div>
+        <div>⚡ <strong>120kW EV Şarj:</strong> 100 İstasyon (Row C)</div>
+        <div>🛑 <strong>Ağır Zemin:</strong> 25 Yer (Kat 1 Row J)</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- GÜVENLİK EL TERMİNALİ MODAL -->
+<div id="guardModal">
+  <div class="guard-box">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+      <span style="font-size:14px;font-weight:700">📱 Güvenlik El Terminali</span>
+      <button onclick="closeGuardModal()" style="background:transparent;border:none;font-size:18px;cursor:pointer">✕</button>
+    </div>
+
+    <div style="font-size:12px;color:var(--muted);margin-bottom:12px">
+      Devriye sırasında şüpheli plakayı sorgulayın:
+    </div>
+
+    <input id="gPlateInp" placeholder="Plaka (Örn: 34 VIP 1000)" style="width:100%;padding:10px;border:1px solid var(--border);border-radius:6px;font-size:13px;margin-bottom:10px;text-transform:uppercase" />
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
+      <select id="gFloorInp" style="padding:10px;border:1px solid var(--border);border-radius:6px;font-size:13px">
+        <option value="1">Kat 1</option>
+        <option value="2">Kat 2</option>
+        <option value="3">Kat 3</option>
+        <option value="4">Kat 4</option>
+        <option value="5">Kat 5</option>
+      </select>
+      <input id="gSlotInp" placeholder="Slot (Örn: C-01)" style="padding:10px;border:1px solid var(--border);border-radius:6px;font-size:13px;text-transform:uppercase" />
+    </div>
+
+    <button onclick="submitInspection()" class="btn-guard" style="width:100%;padding:10px;font-size:13px">
+      🔍 Plaka & Tahsis Eşleşmesini Doğrula
+    </button>
+
+    <div id="gResultBox" style="display:none;margin-top:12px;padding:10px;border-radius:8px;font-size:12px;line-height:1.5"></div>
+  </div>
+</div>
+
+<!-- SLOT DETAY & OTONOM ROTA MODALI -->
+<div id="slotDetailModal" style="position:fixed;inset:0;background:rgba(15,23,42,0.5);z-index:9999;display:none;align-items:center;justify-content:center;backdrop-filter:blur(4px)">
+  <div style="background:#ffffff;border-radius:16px;padding:22px;max-width:440px;width:90%;box-shadow:0 20px 50px rgba(0,0,0,0.15)">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+      <strong id="mSlotTitle" style="font-size:16px">Kat 1 — Slot C-01</strong>
+      <button onclick="closeSlotModal()" style="border:none;background:transparent;font-size:18px;cursor:pointer">✕</button>
+    </div>
+    <div id="mSlotType" style="font-size:12px;color:var(--muted);margin-bottom:14px">⚡ 120kW EV Şarj Hubı</div>
+
+    <div id="mOccBox" style="display:none;background:#f8fafc;border:1px solid var(--border);padding:12px;border-radius:10px;margin-bottom:12px">
+      <div style="font-size:10px;color:var(--muted);font-weight:700">PARK HALİNDEKİ ARAÇ</div>
+      <div id="mCarInfo" style="font-size:12px;margin-top:4px"></div>
+      <button onclick="releaseOccupiedSlot()" style="width:100%;margin-top:10px;padding:8px;border:none;border-radius:6px;background:var(--rose);color:#ffffff;font-size:11px;font-weight:700;cursor:pointer">
+        🚗 Aracı Çıkış Yaptır
+      </button>
+    </div>
+
+    <div id="mAvailBox" style="display:none;background:var(--green-light);border:1px solid var(--green-border);padding:12px;border-radius:10px;margin-bottom:12px">
+      <span style="font-size:11px;color:var(--green);font-weight:700">✅ Bu park alanı şu anda boştur.</span>
+      <div style="font-size:10px;color:var(--muted);margin-top:4px">Giriş kapısından bu slota otonom sürüş rota grafını hesaplayabilirsiniz:</div>
+      <button onclick="showSlotAVPRoute()" style="width:100%;margin-top:10px;padding:9px;border:none;border-radius:6px;background:var(--dark-btn);color:#ffffff;font-size:11px;font-weight:700;cursor:pointer">
+        🚀 Giriş Kapısından Bu Slota Otonom Rota Çiz
+      </button>
+    </div>
+
+    <div id="mRouteBox" style="display:none;background:#f8fafc;border:1px solid var(--border);padding:12px;border-radius:10px"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  let activeFloorId = 1;
+  let activeFilter = 'ALL';
+
+  function renderTabs() {
+    document.getElementById('flTabContainer').innerHTML = [1, 2, 3, 4, 5].map(id => `
+      <div class="fl-tab ${id === activeFloorId ? 'active' : ''}" onclick="switchFloor(${id})">
+        Kat ${id} (200 Slot)
+      </div>
+    `).join('');
+  }
+
+  function switchFloor(id) {
+    activeFloorId = id;
+    renderTabs();
+    render();
+  }
+
+  function setFilter(f, el) {
+    activeFilter = f;
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    el.classList.add('active');
+    render();
+  }
+
+  function openGuardModal() {
+    document.getElementById('gFloorInp').value = activeFloorId;
+    document.getElementById('guardModal').classList.add('show');
+  }
+
+  function closeGuardModal() {
+    document.getElementById('guardModal').classList.remove('show');
+  }
+
+  function submitInspection() {
+    const plate = document.getElementById('gPlateInp').value.trim();
+    const floorId = parseInt(document.getElementById('gFloorInp').value);
+    const slotCode = document.getElementById('gSlotInp').value.trim().toUpperCase();
+
+    const r = SP.guardInspectPlate(plate, floorId, slotCode, '');
+    const box = document.getElementById('gResultBox');
+    box.style.display = 'block';
+
+    if (r.matched) {
+      box.style.background = 'var(--green-light)';
+      box.style.border = '1px solid var(--green-border)';
+      box.style.color = 'var(--green)';
+      box.innerHTML = `<strong>${r.title}</strong><br>${r.details}`;
+    } else {
+      box.style.background = 'var(--rose-light)';
+      box.style.border = '1px solid #fecdd3';
+      box.style.color = 'var(--rose)';
+      box.innerHTML = `<strong>${r.title}</strong><br>${r.details}`;
+    }
+    render();
+  }
+
+  function render() {
+    const db = SP.getDB();
+    if (!db) return;
+    const floor = db.floors.find(f => f.id === activeFloorId);
+    if (!floor) return;
+
+    const flNameEl = document.getElementById('currentFlName');
+    if (flNameEl) flNameEl.textContent = floor.name;
+
+    const totalSlots = floor.slots.length;
+    const occupiedCount = floor.slots.filter(s => s.occupied).length;
+    const availableCount = totalSlots - occupiedCount;
+    const occPct = Math.round(occupiedCount / totalSlots * 100);
+
+    const sumEl = document.getElementById('flSummaryText');
+    if (sumEl) {
+      sumEl.innerHTML = `<strong>${floor.name}:</strong> Toplam 200 Slot | <span style="color:var(--rose);font-weight:700">${occupiedCount} Dolu (%${occPct})</span> | <span style="color:var(--green);font-weight:700">${availableCount} Müsait</span>`;
+    }
+
+    const rows = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J'];
+    let html = '';
+
+    for (const row of rows) {
+      let badge = '';
+      if (row === 'A') badge = '<span style="color:var(--muted)">[♿ Engelli 0-Rampa]</span>';
+      else if (row === 'B') badge = '<span style="color:var(--muted)">[🌸 Kadın / Aile]</span>';
+      else if (row === 'C') badge = '<span style="color:var(--green);font-weight:700">[⚡ 120kW DC Ultra EV Hub]</span>';
+      else if (row === 'J' && activeFloorId === 1) badge = '<span style="color:var(--amber);font-weight:700">[🛑 Güçlendirilmiş Zemin / Ağır Pickup]</span>';
+
+      let slots = floor.slots.filter(s => s.row === row);
+
+      // Filtreleme
+      if (activeFilter === 'EV') slots = slots.filter(s => s.evCharger);
+      else if (activeFilter === 'DISABLED') slots = slots.filter(s => s.disabled);
+      else if (activeFilter === 'WOMAN') slots = slots.filter(s => s.womanFamily);
+      else if (activeFilter === 'HEAVY') slots = slots.filter(s => s.heavyCapable);
+      else if (activeFilter === 'OCCUPIED') slots = slots.filter(s => s.occupied);
+      else if (activeFilter === 'AVAILABLE') slots = slots.filter(s => !s.occupied);
+
+      if (slots.length === 0) continue; // Bu filtrede slot yoksa koridoru gizle
+
+      const rowOccupied = slots.filter(s => s.occupied).length;
+
+      html += `
+        <div class="aisle-section">
+          <div class="aisle-header">
+            <span>SIRA ${row} ${badge}</span>
+            <span style="font-size:11px;font-weight:700;color:var(--muted)">${rowOccupied}/${slots.length} Dolu</span>
+          </div>
+          <div class="slots-row">
+      `;
+
+      for (const slot of slots) {
+        let cls = slot.occupied ? 'occ' : 'avail';
+        let statusText = slot.occupied ? (slot.plate ? slot.plate.slice(0, 7) : 'DOLU') : 'BOŞ';
+        let iconPrefix = '';
+        if (slot.evCharger) iconPrefix = '⚡';
+        else if (slot.disabled) iconPrefix = '♿';
+        else if (slot.womanFamily) iconPrefix = '🌸';
+
+        html += `
+          <div class="slot-card ${cls}" onclick="onSlotClick(${activeFloorId}, '${slot.code}', '${slot.plate || ''}')" title="${slot.code} — ${slot.occupied ? (slot.model + ' (' + (slot.plate||'') + ')') : 'Müsait Slot'}">
+            ${slot.occupied ? '<div class="beacon-dot"></div>' : ''}
+            <div style="font-weight:800;font-size:11px">${iconPrefix}${slot.code}</div>
+            <div style="font-size:8px;font-weight:600;margin-top:2px;opacity:0.9">${statusText}</div>
+          </div>
+        `;
+      }
+      html += `</div></div>`;
+    }
+
+    if (!html) {
+      html = `<div style="text-align:center;padding:40px;color:var(--muted);font-size:13px">Bu filtreye uygun slot bulunamadı.</div>`;
+    }
+
+    document.getElementById('aisleContainer').innerHTML = html;
+
+    const audits = db.guardAudits || [];
+    document.getElementById('guardLogList').innerHTML = audits.length ? audits.slice(0, 10).map(a => `
+      <div style="padding:8px 10px;border-radius:6px;background:#f8fafc;border-left:3px solid ${a.status.includes('CORRECT')?'var(--green)':'var(--rose)'};font-size:11px">
+        <div style="font-weight:700;color:var(--text)">${a.plate} — ${a.status}</div>
+        <div style="color:var(--muted);font-size:10px">${a.note}</div>
+      </div>
+    `).join('') : '<div style="color:var(--muted);font-size:11px">Henüz denetim kaydı yok.</div>';
+  }
+
+  let selectedSlotObj = null;
+
+  function onSlotClick(floorId, slotCode, plate) {
+    const db = SP.getDB();
+    const floor = db.floors.find(f => f.id === floorId);
+    const slot = floor?.slots.find(s => s.code === slotCode);
+    if (!slot) return;
+
+    selectedSlotObj = { floorId, slot, plate };
+    const modal = document.getElementById('slotDetailModal');
+    
+    document.getElementById('mSlotTitle').textContent = `Kat ${floorId} — Slot ${slotCode}`;
+    document.getElementById('mSlotType').textContent = slot.evCharger ? '⚡ 120kW DC Hızlı EV Şarj İstasyonu' : (slot.disabled ? '♿ Engelli Öncelikli Park Alanı' : (slot.womanFamily ? '🌸 Kadın / Aile Park Alanı' : '🚗 Standart Park Alanı'));
+
+    if (slot.occupied) {
+      const veh = db.vehicles.find(v => v.plate === plate) || { plate, model: slot.model || 'Bilinmiyor', since: slot.since };
+      const duration = Math.max(1, Math.round((new Date() - new Date(veh.since || new Date())) / 60000));
+      document.getElementById('mOccBox').style.display = 'block';
+      document.getElementById('mAvailBox').style.display = 'none';
+      document.getElementById('mCarInfo').innerHTML = `
+        <strong>${veh.plate}</strong> (${veh.model})<br>
+        <span style="color:var(--muted)">Süre: ${duration} dakika | Durum: ${veh.isCharging ? '⚡ Şarj Oluyor' : '🅿️ Park Halinde'}</span>
+      `;
+    } else {
+      document.getElementById('mOccBox').style.display = 'none';
+      document.getElementById('mAvailBox').style.display = 'block';
+    }
+
+    document.getElementById('mRouteBox').style.display = 'none';
+    modal.classList.add('show');
+  }
+
+  function showSlotAVPRoute() {
+    if (!selectedSlotObj) return;
+    const r = SP.generateAutonomousRoute(selectedSlotObj.floorId, selectedSlotObj.slot.code, 'TESLA MODEL 3');
+    const box = document.getElementById('mRouteBox');
+    box.style.display = 'block';
+
+    box.innerHTML = `
+      <div style="font-weight:700;margin-bottom:6px;color:var(--green)">
+        🚀 Otonom Vale Rota Grafı (${r.totalDistanceM}m, +${r.elevationM.toFixed(1)}m, ~${r.estimatedTimeSec} sn):
+      </div>
+      <div style="max-height:160px;overflow-y:auto;display:flex;flex-direction:column;gap:4px">
+        ${r.waypoints.map(w => `
+          <div style="background:#ffffff;border:1px solid var(--border);padding:6px 8px;border-radius:6px;font-size:10px">
+            <strong>Adım ${w.step}: ${w.icon} ${w.title}</strong> (${w.speedKmh} km/s)<br>
+            <span style="color:var(--muted)">${w.desc}</span>
+          </div>
+        `).join('')}
+      </div>
+    `;
+    SP.speakVoice(`Kat ${selectedSlotObj.floorId} ${selectedSlotObj.slot.code} için otonom rota oluşturuldu.`);
+  }
+
+  function releaseOccupiedSlot() {
+    if (!selectedSlotObj || !selectedSlotObj.plate) return;
+    const r = SP.processVehicleExit(selectedSlotObj.plate, 0);
+    closeSlotModal();
+    if (r.error) showToast(r.error);
+    else showToast(r.message);
+    render();
+  }
+
+  function closeSlotModal() {
+    document.getElementById('slotDetailModal').classList.remove('show');
+  }
+
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.className = 'toast show';
+    setTimeout(() => t.classList.remove('show'), 3500);
+  }
+
+  SP.onUpdate(() => render());
+  renderTabs();
+  render();
+</script>
+</body>
+</html>

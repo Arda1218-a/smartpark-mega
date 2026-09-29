@@ -1,0 +1,27 @@
+# Operating System Files
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+.DS_Store
+*.stackdump
+
+# Environment & Sensitive Keys
+.env
+.env.local
+*.key
+*.pem
+
+# Python & Node Runtime Artifacts
+__pycache__/
+*.py[cod]
+*$py.class
+*.log
+node_modules/
+
+# Local IDE & Editor Settings
+.vscode/
+.idea/
+*.suo
+*.user
+*.workspace
